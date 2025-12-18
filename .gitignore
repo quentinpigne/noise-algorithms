@@ -1,0 +1,6 @@
+# TypeScript
+node_modules/
+dist/
+
+# Shared
+.DS_Store

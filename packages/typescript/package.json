@@ -1,0 +1,20 @@
+{
+  "name": "@quentinpigne/noise-algorithms",
+  "version": "1.0.0",
+  "description": "A collection of noise algorithms",
+  "license": "MIT",
+  "author": "Quentin PIGNÉ",
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "postbuild": "cp ../../README.md ../../LICENSE dist/ && node ./scripts/prune-package-json.js",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "30.0.0",
+    "jest": "30.2.0",
+    "ts-jest": "29.4.6",
+    "tsup": "8.5.1",
+    "typescript": "5.9.3"
+  }
+}
