@@ -8,13 +8,14 @@
   "scripts": {
     "build": "tsup",
     "postbuild": "cp ../../README.md ../../LICENSE dist/ && node ./scripts/prune-package-json.js",
-    "test": "jest"
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:ui": "vitest ui"
   },
   "devDependencies": {
-    "@types/jest": "30.0.0",
-    "jest": "30.2.0",
-    "ts-jest": "29.4.6",
+    "@vitest/ui": "4.0.18",
     "tsup": "8.5.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.0.18"
   }
 }
