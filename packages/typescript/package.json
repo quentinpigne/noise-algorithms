@@ -6,7 +6,7 @@
   "author": "Quentin PIGNÉ",
   "type": "module",
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "postbuild": "cp ../../README.md ../../LICENSE dist/ && node ./scripts/prune-package-json.js",
     "test": "vitest run",
     "test:watch": "vitest watch",
@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@vitest/ui": "4.0.18",
-    "tsup": "8.5.1",
+    "tsdown": "0.20.1",
     "typescript": "5.9.3",
     "vitest": "4.0.18"
   }
