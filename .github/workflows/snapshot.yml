@@ -1,8 +1,10 @@
 name: Snapshot
 
-# Continuous dev snapshots published on every push to main:
-#   - TypeScript -> GitHub Packages   (version X.Y.Z-dev.<sha>, npm tag "dev")
-#   - Python     -> TestPyPI          (version X.Y.Z.dev<run-number>)
+# Continuous dev snapshots published on every push to main. Registries are
+# immutable, so each run publishes a NEW unique pre-release version and the
+# "dev" / pre-release channel points at the latest one:
+#   - TypeScript -> GitHub Packages   (X.Y.Z-dev.<run>.<attempt>, npm tag "dev")
+#   - Python     -> TestPyPI          (X.Y.Z.dev<run>, skip-existing)
 on:
   push:
     branches: [main]
@@ -36,9 +38,11 @@ jobs:
       - run: npm test
       - run: npm run build
       - name: Set snapshot version
+        # Unique per run; run_attempt keeps re-runs from colliding.
         run: |
           BASE="$(node -p "require('./package.json').version")"
-          npm version --no-git-tag-version "${BASE}-dev.${GITHUB_SHA::7}"
+          npm version --no-git-tag-version \
+            "${BASE}-dev.${{ github.run_number }}.${{ github.run_attempt }}"
       - run: npm publish --tag dev
 
   python:
@@ -65,3 +69,4 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
           packages-dir: packages/python/dist
+          skip-existing: true # idempotent on re-runs (don't fail if it exists)
