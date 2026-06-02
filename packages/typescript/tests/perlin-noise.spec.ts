@@ -1,7 +1,7 @@
 import { PerlinNoise1D } from "../src/perlin-noise/perlin-noise-1d";
 import { PerlinNoise2D } from "../src/perlin-noise/perlin-noise-2d";
 import { PerlinNoise3D } from "../src/perlin-noise/perlin-noise-3d";
-import { PerlinNoiseImage } from "../src/utils/perlin-noise-image";
+import { PerlinNoiseImage } from "../scripts/perlin-noise-image";
 import fs from "fs";
 import path from "path";
 

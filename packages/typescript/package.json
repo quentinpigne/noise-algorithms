@@ -1,19 +1,61 @@
 {
   "name": "@quentinpigne/noise-algorithms",
   "version": "1.0.0",
-  "description": "A collection of noise algorithms",
+  "description": "A collection of noise generation algorithms (Perlin, ...) in TypeScript",
+  "keywords": [
+    "noise",
+    "perlin",
+    "perlin-noise",
+    "procedural",
+    "procedural-generation",
+    "noise-generator",
+    "typescript"
+  ],
   "license": "MIT",
   "author": "Quentin PIGNÉ",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quentinpigne/noise-algorithms.git",
+    "directory": "packages/typescript"
+  },
+  "bugs": {
+    "url": "https://github.com/quentinpigne/noise-algorithms/issues"
+  },
+  "homepage": "https://github.com/quentinpigne/noise-algorithms/tree/master/packages/typescript#readme",
   "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./perlin-noise": {
+      "types": "./dist/perlin-noise/index.d.mts",
+      "import": "./dist/perlin-noise/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsdown",
-    "postbuild": "cp ../../README.md ../../LICENSE dist/ && node ./scripts/prune-package-json.js",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:ui": "vitest ui"
   },
   "devDependencies": {
     "@vitest/ui": "4.0.18",
+    "pngjs": "7.0.0",
     "tsdown": "0.20.1",
     "typescript": "5.9.3",
     "vitest": "4.0.18"
