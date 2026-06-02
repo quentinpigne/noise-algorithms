@@ -84,11 +84,8 @@ export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
    * @returns gradient value
    */
   private gradient(h: number, x: number, y: number, z: number): number {
-    return (
-      x * VECTORS_3D[h & 11][0] +
-      y * VECTORS_3D[h & 11][1] +
-      z * VECTORS_3D[h & 11][2]
-    );
+    const vector = VECTORS_3D[h % 12];
+    return x * vector[0] + y * vector[1] + z * vector[2];
   }
 
   /**
