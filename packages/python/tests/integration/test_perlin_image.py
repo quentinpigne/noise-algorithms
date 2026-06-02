@@ -66,20 +66,77 @@ for y in range(H):
     for x in range(W):
         buf[y * W + x] = gray(perlin_2d(x, y, config))
 """,
+    # Swiss-cheese cube: sample a voxel grid, keep the densest ~60% solid, draw
+    # the exposed faces in isometric projection (painter's order, shaded).
     "3d": """
-GRID, ZSTEP = 4, 8
-TILE = W // GRID
-STRIDE = W // TILE
-for k in range(GRID * GRID):
-    col, row, z = k % GRID, k // GRID, k * ZSTEP
-    for ty in range(TILE):
-        for tx in range(TILE):
-            v = perlin_3d(tx * STRIDE, ty * STRIDE, z, config)
-            buf[(row * TILE + ty) * W + (col * TILE + tx)] = gray(v)
-for i in range(1, GRID):
-    for p in range(W):
-        buf[p * W + i * TILE] = 255
-        buf[(i * TILE) * W + p] = 255
+import math
+
+N, STEP, FILL = 24, 6, 0.6
+A, B, C = 4, 2, 4
+OX, OY = W / 2, H / 2
+TOP, RIGHT, LEFT = 215, 120, 165
+
+
+def at(i, j, k):
+    return (i * N + j) * N + k
+
+
+vals = [0.0] * (N * N * N)
+for i in range(N):
+    for j in range(N):
+        for k in range(N):
+            vals[at(i, j, k)] = perlin_3d(i * STEP, j * STEP, k * STEP, config)
+threshold = sorted(vals)[int(FILL * len(vals))]
+
+
+def solid(i, j, k):
+    return 0 <= i < N and 0 <= j < N and 0 <= k < N and vals[at(i, j, k)] <= threshold
+
+
+def project(i, j, k):
+    return (OX + (i - j) * A, OY + (i + j) * B - k * C)
+
+
+def fill_quad(pts, value):
+    ys = [p[1] for p in pts]
+    y_min = max(0, int(math.floor(min(ys))))
+    y_max = min(H - 1, int(math.ceil(max(ys))))
+    for y in range(y_min, y_max + 1):
+        xs = []
+        for e in range(4):
+            x1, y1 = pts[e]
+            x2, y2 = pts[(e + 1) % 4]
+            if (y1 <= y < y2) or (y2 <= y < y1):
+                xs.append(x1 + (y - y1) / (y2 - y1) * (x2 - x1))
+        if len(xs) < 2:
+            continue
+        x_left = max(0, round(min(xs)))
+        x_right = min(W - 1, round(max(xs)))
+        for x in range(x_left, x_right + 1):
+            buf[y * W + x] = value
+
+
+voxels = [
+    (i, j, k)
+    for i in range(N)
+    for j in range(N)
+    for k in range(N)
+    if solid(i, j, k)
+]
+voxels.sort(key=lambda v: v[0] + v[1] + v[2])
+for i, j, k in voxels:
+    if not solid(i, j + 1, k):
+        fill_quad(
+            [project(i, j + 1, k), project(i + 1, j + 1, k),
+             project(i + 1, j + 1, k + 1), project(i, j + 1, k + 1)], LEFT)
+    if not solid(i + 1, j, k):
+        fill_quad(
+            [project(i + 1, j, k), project(i + 1, j + 1, k),
+             project(i + 1, j + 1, k + 1), project(i + 1, j, k + 1)], RIGHT)
+    if not solid(i, j, k + 1):
+        fill_quad(
+            [project(i, j, k + 1), project(i + 1, j, k + 1),
+             project(i + 1, j + 1, k + 1), project(i, j + 1, k + 1)], TOP)
 """,
 }
 
