@@ -5,6 +5,9 @@ The package is built (``uv build``) and imported from an isolated environment
 distributed artifact rather than the working-tree sources. Each rendered image
 is compared pixel-for-pixel against a committed snapshot and written to
 ``tests/output`` for inspection.
+
+Renderings: 1D as a line graph of the signal, 2D as a grayscale field, and 3D as
+a montage of z-slices (a grid of tiles sampled at increasing depth).
 """
 
 import os
@@ -23,30 +26,68 @@ PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOT_DIR = PACKAGE_ROOT / "tests" / "snapshots"
 OUTPUT_DIR = PACKAGE_ROOT / "tests" / "output"
 
-# (name, width, height, noise expression evaluated for each (x, y))
+# (name, width, height, kind)
 CASES = [
-    ("perlin-noise-1d.png", 256, 64, "perlin_1d(x, config)"),
-    ("perlin-noise-2d.png", 256, 256, "perlin_2d(x, y, config)"),
-    ("perlin-noise-3d.png", 256, 256, "perlin_3d(x, y, 0, config)"),
+    ("perlin-noise-1d.png", 512, 256, "1d"),
+    ("perlin-noise-2d.png", 256, 256, "2d"),
+    ("perlin-noise-3d.png", 256, 256, "3d"),
 ]
 
 pytestmark = pytest.mark.integration
 
-
-def _render_script(width: int, height: int, expression: str) -> str:
-    """Script run inside the isolated env; emits raw grayscale bytes on stdout."""
-    return f"""
+_PREAMBLE = f"""
 import sys
 from noise_algorithms import PerlinConfig, perlin_1d, perlin_2d, perlin_3d
 
 config = PerlinConfig(seed={SEED}, scale={SCALE})
-buf = bytearray({width} * {height})
-for y in range({height}):
-    for x in range({width}):
-        value = {expression}
-        buf[y * {width} + x] = max(0, min(255, int((value + 1) / 2 * 255)))
-sys.stdout.buffer.write(bytes(buf))
+W, H = {{width}}, {{height}}
+buf = bytearray([255]) * (W * H)
+
+
+def gray(value):
+    return max(0, min(255, int((value + 1) / 2 * 255)))
 """
+
+_BODIES = {
+    "1d": """
+mid = H // 2
+for x in range(W):
+    buf[mid * W + x] = 210
+prev = None
+for x in range(W):
+    y = max(0, min(H - 1, round((1 - (perlin_1d(x, config) + 1) / 2) * (H - 1))))
+    lo, hi = (y, y) if prev is None else (min(prev, y), max(prev, y))
+    for yy in range(lo, hi + 1):
+        buf[yy * W + x] = 30
+    prev = y
+""",
+    "2d": """
+for y in range(H):
+    for x in range(W):
+        buf[y * W + x] = gray(perlin_2d(x, y, config))
+""",
+    "3d": """
+GRID, ZSTEP = 4, 8
+TILE = W // GRID
+STRIDE = W // TILE
+for k in range(GRID * GRID):
+    col, row, z = k % GRID, k // GRID, k * ZSTEP
+    for ty in range(TILE):
+        for tx in range(TILE):
+            v = perlin_3d(tx * STRIDE, ty * STRIDE, z, config)
+            buf[(row * TILE + ty) * W + (col * TILE + tx)] = gray(v)
+for i in range(1, GRID):
+    for p in range(W):
+        buf[p * W + i * TILE] = 255
+        buf[(i * TILE) * W + p] = 255
+""",
+}
+
+_EMIT = "\nsys.stdout.buffer.write(bytes(buf))\n"
+
+
+def _render_script(kind: str, width: int, height: int) -> str:
+    return _PREAMBLE.format(width=width, height=height) + _BODIES[kind] + _EMIT
 
 
 @pytest.fixture(scope="session")
@@ -65,9 +106,9 @@ def wheel(tmp_path_factory: pytest.TempPathFactory) -> str:
     return str(wheels[0])
 
 
-@pytest.mark.parametrize(("name", "width", "height", "expression"), CASES)
+@pytest.mark.parametrize(("name", "width", "height", "kind"), CASES)
 def test_perlin_image_matches_snapshot(
-    wheel: str, name: str, width: int, height: int, expression: str
+    wheel: str, name: str, width: int, height: int, kind: str
 ) -> None:
     result = subprocess.run(
         [
@@ -78,7 +119,7 @@ def test_perlin_image_matches_snapshot(
             wheel,
             "python",
             "-c",
-            _render_script(width, height, expression),
+            _render_script(kind, width, height),
         ],
         check=True,
         capture_output=True,

@@ -9,7 +9,7 @@ monorepo.
 Perlin noise rendered from the built wheel (`seed=42`, `scale=0.03`) — these are
 the snapshots the integration tests verify:
 
-| 1D | 2D | 3D (z = 0 slice) |
+| 1D (signal graph) | 2D (field) | 3D (z-slice montage) |
 | :-: | :-: | :-: |
 | ![1D](./tests/snapshots/perlin-noise-1d.png) | ![2D](./tests/snapshots/perlin-noise-2d.png) | ![3D](./tests/snapshots/perlin-noise-3d.png) |
 
