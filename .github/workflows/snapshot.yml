@@ -1,0 +1,67 @@
+name: Snapshot
+
+# Continuous dev snapshots published on every push to main:
+#   - TypeScript -> GitHub Packages   (version X.Y.Z-dev.<sha>, npm tag "dev")
+#   - Python     -> TestPyPI          (version X.Y.Z.dev<run-number>)
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: snapshot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typescript:
+    name: TypeScript → GitHub Packages
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/typescript
+    permissions:
+      contents: read
+      packages: write
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com
+          scope: "@quentinpigne"
+          cache: npm
+          cache-dependency-path: packages/typescript/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Set snapshot version
+        run: |
+          BASE="$(node -p "require('./package.json').version")"
+          npm version --no-git-tag-version "${BASE}-dev.${GITHUB_SHA::7}"
+      - run: npm publish --tag dev
+
+  python:
+    name: Python → TestPyPI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/python
+    permissions:
+      contents: read
+      id-token: write # required for PyPI trusted publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync
+      - run: uv run pytest
+      - name: Set snapshot version
+        run: uv version "$(uv version --short).dev${{ github.run_number }}"
+      - run: uv build
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: packages/python/dist

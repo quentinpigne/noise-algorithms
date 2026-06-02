@@ -1,0 +1,90 @@
+name: Release
+
+# Public releases, triggered by package-scoped tags:
+#   typescript-v1.2.3        -> npm "latest" + GitHub Packages
+#   typescript-v1.2.3-rc.1   -> npm "next"   + GitHub Packages
+#   python-v0.1.0            -> PyPI (stable)
+#   python-v0.1.0rc1         -> PyPI (pre-release)
+on:
+  push:
+    tags:
+      - "typescript-v*"
+      - "python-v*"
+
+jobs:
+  typescript:
+    name: TypeScript → npm + GitHub Packages
+    if: startsWith(github.ref_name, 'typescript-v')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/typescript
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version and dist-tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#typescript-v}"
+          if [[ "$VERSION" == *-* ]]; then DIST_TAG=next; else DIST_TAG=latest; fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "DIST_TAG=$DIST_TAG" >> "$GITHUB_ENV"
+
+      # --- npm (registry.npmjs.org) ---
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          scope: "@quentinpigne"
+          cache: npm
+          cache-dependency-path: packages/typescript/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npm version --no-git-tag-version "$VERSION"
+      - name: Publish to npm
+        # Drop the committed .npmrc so the @quentinpigne scope resolves to npm
+        # (it otherwise pins the scope to GitHub Packages).
+        run: |
+          rm -f .npmrc
+          npm publish --tag "$DIST_TAG"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # --- GitHub Packages mirror ---
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com
+          scope: "@quentinpigne"
+      - name: Publish to GitHub Packages
+        run: npm publish --tag "$DIST_TAG"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  python:
+    name: Python → PyPI
+    if: startsWith(github.ref_name, 'python-v')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/python
+    permissions:
+      contents: read
+      id-token: write # required for PyPI trusted publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync
+      - run: uv run pytest
+      - name: Set release version from tag
+        run: uv version "${GITHUB_REF_NAME#python-v}"
+      - run: uv build
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/python/dist
