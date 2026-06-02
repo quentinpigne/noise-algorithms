@@ -10,19 +10,19 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 
-from noise_algorithms import PerlinConfig, perlin_2d
+from noise_algorithms import PerlinNoise2D
 
 
 def main() -> None:
     width, height = 512, 512
-    config = PerlinConfig(
+    perlin = PerlinNoise2D(
         seed=0, scale=1 / 64, octaves=6, lacunarity=2.5, persistence=0.2
     )
 
     image = np.zeros((height, width))
     for y in range(height):
         for x in range(width):
-            image[y, x] = perlin_2d(x, y, config)
+            image[y, x] = perlin.noise(x, y)
 
     plt.imshow(image, cmap="gray")
     plt.axis("off")

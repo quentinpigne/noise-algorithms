@@ -9,10 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial pure-Python implementation of fractal Perlin noise: `perlin_1d`,
-  `perlin_2d`, `perlin_3d` and the `PerlinConfig` dataclass.
+- Initial pure-Python implementation of fractal Perlin noise, with two APIs
+  mirroring the TypeScript package: the `PerlinNoise1D/2D/3D` classes (which
+  build their permutation table once and are best for repeated sampling) and the
+  `perlin_1d/2d/3d` one-shot convenience functions, plus `NoiseGenerator{1,2,3}D`
+  typing protocols.
 - Seeded permutation table built with the standard library (no runtime
   dependencies); `numpy`/`matplotlib` are an optional `images` extra used only
   by the example script.
-- `src/` layout with `py.typed`, hatchling build backend and PyPI metadata.
+- `src/` layout with a per-dimension `perlin` subpackage, `py.typed`, hatchling
+  build backend and PyPI metadata.
 - pytest suite and ruff lint/format configuration.

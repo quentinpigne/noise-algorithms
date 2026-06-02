@@ -21,32 +21,50 @@ pip install noise-algorithms
 
 ## Usage
 
-The API is functional: call a `perlin_*` function with coordinates and an
-optional `PerlinConfig`. Every function returns fractal (multi-octave) noise in
-the `[-1, 1]` interval.
+Two equivalent APIs are provided. Every generator returns fractal (multi-octave)
+noise in the `[-1, 1]` interval.
+
+### Classes (recommended for repeated sampling)
+
+A class builds its permutation table once and reuses it across calls — use it
+when generating many values (e.g. an image).
 
 ```python
-from noise_algorithms import PerlinConfig, perlin_1d, perlin_2d, perlin_3d
+from noise_algorithms import PerlinNoise1D, PerlinNoise2D, PerlinNoise3D
 
-# Default configuration (seed=0, scale=0.01, octaves=4, lacunarity=2, persistence=0.5)
-value = perlin_2d(12.0, 7.0)
+perlin = PerlinNoise2D(seed=42, scale=0.05, octaves=6)
+for y in range(height):
+    for x in range(width):
+        value = perlin.noise(x, y)
 
-# Custom configuration
-config = PerlinConfig(seed=42, scale=0.05, octaves=6, lacunarity=2.0, persistence=0.5)
-a = perlin_1d(3.0, config)
-b = perlin_2d(3.0, 4.0, config)
-c = perlin_3d(3.0, 4.0, 5.0, config)
+PerlinNoise1D(seed=42).noise(3.0)
+PerlinNoise3D(seed=42).noise(3.0, 4.0, 5.0)
 ```
 
-### `PerlinConfig`
+### Functions (one-shot convenience)
 
-| Field | Default | Description |
+The `perlin_*` functions wrap the classes for a single value. They build a
+generator per call, so prefer a class instance for loops.
+
+```python
+from noise_algorithms import perlin_1d, perlin_2d, perlin_3d
+
+perlin_2d(12.0, 7.0)                       # defaults
+perlin_2d(12.0, 7.0, seed=42, scale=0.05)  # custom parameters
+```
+
+### Parameters
+
+| Parameter | Default | Description |
 | --- | --- | --- |
 | `seed` | `0` | Seed for the permutation table; same seed → same field. |
 | `scale` | `0.01` | Base frequency multiplier applied to the coordinates. |
 | `octaves` | `4` | Number of noise layers summed together. |
 | `lacunarity` | `2.0` | Frequency multiplier between successive octaves. |
 | `persistence` | `0.5` | Amplitude multiplier between successive octaves. |
+
+The `noise_algorithms.NoiseGenerator{1,2,3}D` protocols describe the `noise`
+contract if you want to type against it.
 
 ## Development
 

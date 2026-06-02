@@ -1,86 +1,99 @@
 """Tests for the Perlin noise generators."""
 
-from dataclasses import FrozenInstanceError
-
 import pytest
 
-from noise_algorithms import PerlinConfig, perlin_1d, perlin_2d, perlin_3d
+from noise_algorithms import (
+    NoiseGenerator1D,
+    NoiseGenerator2D,
+    NoiseGenerator3D,
+    PerlinNoise1D,
+    PerlinNoise2D,
+    PerlinNoise3D,
+    perlin_1d,
+    perlin_2d,
+    perlin_3d,
+)
+
+# Reference values captured from the implementation; guard against regressions.
+SNAPSHOT_1D = -0.010612881309999999
+SNAPSHOT_2D = 0.010676887276492134
+SNAPSHOT_3D = 5.188027590892116e-06
 
 
-def test_config_defaults():
-    config = PerlinConfig()
-    assert config.seed == 0
-    assert config.scale == 0.01
-    assert config.octaves == 4
-    assert config.lacunarity == 2.0
-    assert config.persistence == 0.5
-
-
-def test_config_is_immutable():
-    config = PerlinConfig()
-    with pytest.raises(FrozenInstanceError):
-        config.seed = 1  # type: ignore[misc]
+def test_default_parameters():
+    perlin = PerlinNoise2D()
+    assert perlin._scale == 0.01
+    assert perlin._octaves == 4
+    assert perlin._lacunarity == 2.0
+    assert perlin._persistence == 0.5
 
 
 @pytest.mark.parametrize(
     "call",
     [
-        lambda c: perlin_1d(1.5, c),
-        lambda c: perlin_2d(1.5, 2.5, c),
-        lambda c: perlin_3d(1.5, 2.5, 3.5, c),
+        lambda seed: PerlinNoise1D(seed=seed).noise(1.5),
+        lambda seed: PerlinNoise2D(seed=seed).noise(1.5, 2.5),
+        lambda seed: PerlinNoise3D(seed=seed).noise(1.5, 2.5, 3.5),
     ],
 )
 def test_deterministic_for_a_given_seed(call):
-    config = PerlinConfig(seed=42)
-    assert call(config) == call(config)
+    assert call(42) == call(42)
 
 
 @pytest.mark.parametrize(
     "call",
     [
-        lambda c: perlin_1d(1.5, c),
-        lambda c: perlin_2d(1.5, 2.5, c),
-        lambda c: perlin_3d(1.5, 2.5, 3.5, c),
+        lambda seed: PerlinNoise1D(seed=seed).noise(1.5),
+        lambda seed: PerlinNoise2D(seed=seed).noise(1.5, 2.5),
+        lambda seed: PerlinNoise3D(seed=seed).noise(1.5, 2.5, 3.5),
     ],
 )
 def test_different_seeds_differ(call):
-    assert call(PerlinConfig(seed=1)) != call(PerlinConfig(seed=2))
+    assert call(1) != call(2)
 
 
 def test_seed_zero_is_valid_and_deterministic():
-    config = PerlinConfig(seed=0)
-    assert perlin_2d(1.5, 2.5, config) == perlin_2d(1.5, 2.5, config)
+    assert PerlinNoise2D(seed=0).noise(1.5, 2.5) == PerlinNoise2D(seed=0).noise(
+        1.5, 2.5
+    )
 
 
 def test_output_within_bounds():
-    config = PerlinConfig(seed=42, scale=0.1)
+    perlin = PerlinNoise3D(seed=42, scale=0.1)
     for i in range(1000):
         for value in (
-            perlin_1d(i * 0.37, config),
-            perlin_2d(i * 0.37, i * 1.13, config),
-            perlin_3d(i * 0.37, i * 1.13, i * 2.71, config),
+            PerlinNoise1D(seed=42, scale=0.1).noise(i * 0.37),
+            PerlinNoise2D(seed=42, scale=0.1).noise(i * 0.37, i * 1.13),
+            perlin.noise(i * 0.37, i * 1.13, i * 2.71),
         ):
             assert -1.0 <= value <= 1.0
 
 
-def test_default_config_used_when_omitted():
-    assert perlin_2d(1.5, 2.5) == perlin_2d(1.5, 2.5, PerlinConfig())
-
-
 def test_octaves_change_the_output():
-    one = perlin_2d(1.5, 2.5, PerlinConfig(seed=42, octaves=1))
-    many = perlin_2d(1.5, 2.5, PerlinConfig(seed=42, octaves=6))
+    one = PerlinNoise2D(seed=42, octaves=1).noise(1.5, 2.5)
+    many = PerlinNoise2D(seed=42, octaves=6).noise(1.5, 2.5)
     assert one != many
 
 
+def test_functions_match_their_class():
+    assert perlin_1d(1.5, seed=42) == PerlinNoise1D(seed=42).noise(1.5)
+    assert perlin_2d(1.5, 2.5, seed=42) == PerlinNoise2D(seed=42).noise(1.5, 2.5)
+    assert perlin_3d(1.5, 2.5, 3.5, seed=42) == PerlinNoise3D(seed=42).noise(
+        1.5, 2.5, 3.5
+    )
+
+
+def test_generators_satisfy_their_protocol():
+    assert isinstance(PerlinNoise1D(), NoiseGenerator1D)
+    assert isinstance(PerlinNoise2D(), NoiseGenerator2D)
+    assert isinstance(PerlinNoise3D(), NoiseGenerator3D)
+
+
 def test_regression_snapshots():
-    config = PerlinConfig(seed=42)
-    assert perlin_1d(0.5, config) == pytest.approx(__SNAP_1D, abs=1e-9)
-    assert perlin_2d(0.5, 0.5, config) == pytest.approx(__SNAP_2D, abs=1e-9)
-    assert perlin_3d(0.5, 0.5, 0.5, config) == pytest.approx(__SNAP_3D, abs=1e-9)
-
-
-# Reference values captured from the implementation; guard against regressions.
-__SNAP_1D = -0.010612881309999999
-__SNAP_2D = 0.010676887276492134
-__SNAP_3D = 5.188027590892116e-06
+    assert PerlinNoise1D(seed=42).noise(0.5) == pytest.approx(SNAPSHOT_1D, abs=1e-9)
+    assert PerlinNoise2D(seed=42).noise(0.5, 0.5) == pytest.approx(
+        SNAPSHOT_2D, abs=1e-9
+    )
+    assert PerlinNoise3D(seed=42).noise(0.5, 0.5, 0.5) == pytest.approx(
+        SNAPSHOT_3D, abs=1e-9
+    )

@@ -37,9 +37,9 @@ pytestmark = pytest.mark.integration
 
 _PREAMBLE = f"""
 import sys
-from noise_algorithms import PerlinConfig, perlin_1d, perlin_2d, perlin_3d
+from noise_algorithms import PerlinNoise1D, PerlinNoise2D, PerlinNoise3D
 
-config = PerlinConfig(seed={SEED}, scale={SCALE})
+SEED, SCALE = {SEED}, {SCALE}
 W, H = {{width}}, {{height}}
 buf = bytearray([255]) * (W * H)
 
@@ -50,21 +50,23 @@ def gray(value):
 
 _BODIES = {
     "1d": """
+perlin = PerlinNoise1D(seed=SEED, scale=SCALE)
 mid = H // 2
 for x in range(W):
     buf[mid * W + x] = 210
 prev = None
 for x in range(W):
-    y = max(0, min(H - 1, round((1 - (perlin_1d(x, config) + 1) / 2) * (H - 1))))
+    y = max(0, min(H - 1, round((1 - (perlin.noise(x) + 1) / 2) * (H - 1))))
     lo, hi = (y, y) if prev is None else (min(prev, y), max(prev, y))
     for yy in range(lo, hi + 1):
         buf[yy * W + x] = 30
     prev = y
 """,
     "2d": """
+perlin = PerlinNoise2D(seed=SEED, scale=SCALE)
 for y in range(H):
     for x in range(W):
-        buf[y * W + x] = gray(perlin_2d(x, y, config))
+        buf[y * W + x] = gray(perlin.noise(x, y))
 """,
     # Swiss-cheese cube: sample a voxel grid, keep the densest ~60% solid, draw
     # the exposed faces in isometric projection (painter's order, shaded).
@@ -81,11 +83,12 @@ def at(i, j, k):
     return (i * N + j) * N + k
 
 
+perlin = PerlinNoise3D(seed=SEED, scale=SCALE)
 vals = [0.0] * (N * N * N)
 for i in range(N):
     for j in range(N):
         for k in range(N):
-            vals[at(i, j, k)] = perlin_3d(i * STEP, j * STEP, k * STEP, config)
+            vals[at(i, j, k)] = perlin.noise(i * STEP, j * STEP, k * STEP)
 threshold = sorted(vals)[int(FILL * len(vals))]
 
 
