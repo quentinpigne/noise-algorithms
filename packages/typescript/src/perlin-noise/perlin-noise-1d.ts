@@ -9,7 +9,7 @@ export class PerlinNoise1D extends PerlinNoise implements NoiseGenerator1D {
     scale: number = 0.01,
     octaves: number = 4,
     lacunarity: number = 2,
-    persistence: number = 0.5
+    persistence: number = 0.5,
   ) {
     super(seed, scale, octaves, lacunarity, persistence);
   }

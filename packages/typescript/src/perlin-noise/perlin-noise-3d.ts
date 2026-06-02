@@ -25,7 +25,7 @@ export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
     scale: number = 0.01,
     octaves: number = 4,
     lacunarity: number = 2,
-    persistence: number = 0.5
+    persistence: number = 0.5,
   ) {
     super(seed, scale, octaves, lacunarity, persistence);
   }
@@ -45,7 +45,7 @@ export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
     y0: number,
     y1: number,
     z0: number,
-    z1: number
+    z1: number,
   ): number[] {
     const h0 = this.permutationTable[x0];
     const h1 = this.permutationTable[x1];
@@ -123,7 +123,7 @@ export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
       y0,
       y1,
       z0,
-      z1
+      z1,
     );
 
     // Noise components
@@ -160,7 +160,7 @@ export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
         this.perlinNoise(
           x * frequency * this.scale,
           y * frequency * this.scale,
-          z * frequency * this.scale
+          z * frequency * this.scale,
         ) * amplitude;
       maxValue += amplitude;
       amplitude *= this.persistence;

@@ -25,7 +25,7 @@ export class PerlinNoiseImage {
     octaves: 4,
     lacunarity: 2,
     persistence: 0.5,
-    outputPath: "perlin-noise.png"
+    outputPath: "perlin-noise.png",
   };
 
   /**
@@ -40,7 +40,7 @@ export class PerlinNoiseImage {
       width: opts.width!,
       height: opts.height!,
       colorType: 0, // Grayscale
-      inputColorType: 0
+      inputColorType: 0,
     });
 
     const noise = new PerlinNoise1D(
@@ -48,7 +48,7 @@ export class PerlinNoiseImage {
       opts.scale,
       opts.octaves,
       opts.lacunarity,
-      opts.persistence
+      opts.persistence,
     );
 
     for (let x = 0; x < opts.width!; x++) {
@@ -77,7 +77,7 @@ export class PerlinNoiseImage {
       width: opts.width!,
       height: opts.height!,
       colorType: 0, // Grayscale
-      inputColorType: 0
+      inputColorType: 0,
     });
 
     const noise = new PerlinNoise2D(
@@ -85,7 +85,7 @@ export class PerlinNoiseImage {
       opts.scale,
       opts.octaves,
       opts.lacunarity,
-      opts.persistence
+      opts.persistence,
     );
 
     for (let y = 0; y < opts.height!; y++) {
@@ -108,14 +108,17 @@ export class PerlinNoiseImage {
    * @param zSlice Z coordinate for the 2D slice
    * @returns PNG buffer
    */
-  static generate3D(options: PerlinNoiseImageOptions = {}, zSlice: number = 0): Buffer {
+  static generate3D(
+    options: PerlinNoiseImageOptions = {},
+    zSlice: number = 0,
+  ): Buffer {
     const opts = { ...this.DEFAULT_OPTIONS, ...options };
 
     const png = new PNG({
       width: opts.width!,
       height: opts.height!,
       colorType: 0, // Grayscale
-      inputColorType: 0
+      inputColorType: 0,
     });
 
     const noise = new PerlinNoise3D(
@@ -123,7 +126,7 @@ export class PerlinNoiseImage {
       opts.scale,
       opts.octaves,
       opts.lacunarity,
-      opts.persistence
+      opts.persistence,
     );
 
     for (let y = 0; y < opts.height!; y++) {
@@ -155,7 +158,10 @@ export class PerlinNoiseImage {
    * @param options Perlin noise options
    * @param outputDir Output directory
    */
-  static generateAllDimensions(options: PerlinNoiseImageOptions = {}, outputDir: string = "./"): void {
+  static generateAllDimensions(
+    options: PerlinNoiseImageOptions = {},
+    outputDir: string = "./",
+  ): void {
     const opts = { ...this.DEFAULT_OPTIONS, ...options };
 
     // Create output directory if it doesn't exist

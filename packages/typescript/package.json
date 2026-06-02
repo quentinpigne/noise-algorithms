@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/quentinpigne/noise-algorithms/issues"
   },
-  "homepage": "https://github.com/quentinpigne/noise-algorithms/tree/master/packages/typescript#readme",
+  "homepage": "https://github.com/quentinpigne/noise-algorithms/tree/main/packages/typescript#readme",
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.mjs",
@@ -51,13 +51,23 @@
     "build": "tsdown",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "test:ui": "vitest ui"
+    "test:ui": "vitest ui",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@vitest/ui": "4.0.18",
+    "eslint": "^10.4.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.6.0",
     "pngjs": "7.0.0",
+    "prettier": "^3.8.3",
     "tsdown": "0.20.1",
     "typescript": "5.9.3",
+    "typescript-eslint": "^8.60.1",
     "vitest": "4.0.18"
   }
 }

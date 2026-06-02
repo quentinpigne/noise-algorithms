@@ -56,13 +56,13 @@ import {
 new PerlinNoise2D(seed?, scale?, octaves?, lacunarity?, persistence?)
 ```
 
-| Parameter | Default | Description |
-| --- | --- | --- |
-| `seed` | random | Seed for the permutation table; same seed → same field. |
-| `scale` | `0.01` | Base frequency multiplier applied to the coordinates. |
-| `octaves` | `4` | Number of noise layers summed together. |
-| `lacunarity` | `2` | Frequency multiplier between successive octaves. |
-| `persistence` | `0.5` | Amplitude multiplier between successive octaves. |
+| Parameter     | Default | Description                                             |
+| ------------- | ------- | ------------------------------------------------------- |
+| `seed`        | random  | Seed for the permutation table; same seed → same field. |
+| `scale`       | `0.01`  | Base frequency multiplier applied to the coordinates.   |
+| `octaves`     | `4`     | Number of noise layers summed together.                 |
+| `lacunarity`  | `2`     | Frequency multiplier between successive octaves.        |
+| `persistence` | `0.5`   | Amplitude multiplier between successive octaves.        |
 
 ## Development
 

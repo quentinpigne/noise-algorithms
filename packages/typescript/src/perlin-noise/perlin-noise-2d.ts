@@ -21,7 +21,7 @@ export class PerlinNoise2D extends PerlinNoise implements NoiseGenerator2D {
     scale: number = 0.01,
     octaves: number = 4,
     lacunarity: number = 2,
-    persistence: number = 0.5
+    persistence: number = 0.5,
   ) {
     super(seed, scale, octaves, lacunarity, persistence);
   }
@@ -114,7 +114,7 @@ export class PerlinNoise2D extends PerlinNoise implements NoiseGenerator2D {
       value +=
         this.perlinNoise(
           x * frequency * this.scale,
-          y * frequency * this.scale
+          y * frequency * this.scale,
         ) * amplitude;
       maxValue += amplitude;
       amplitude *= this.persistence;

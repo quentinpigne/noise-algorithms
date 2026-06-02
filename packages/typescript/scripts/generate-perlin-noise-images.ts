@@ -2,7 +2,6 @@
 
 import { PerlinNoiseImage } from "./perlin-noise-image.ts";
 import path from "path";
-import fs from "fs";
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -57,9 +56,9 @@ PerlinNoiseImage.generateAllDimensions(
     scale,
     octaves,
     lacunarity,
-    persistence
+    persistence,
   },
-  outputDir
+  outputDir,
 );
 
 console.log("\nGeneration complete!");

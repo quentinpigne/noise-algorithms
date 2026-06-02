@@ -22,7 +22,7 @@ export function cuberp(
   v1: number,
   v2: number,
   v3: number,
-  t: number
+  t: number,
 ): number {
   const p = v3 - v2 - (v0 - v1);
   const q = v0 - v1 - p;

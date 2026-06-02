@@ -63,7 +63,12 @@ describe("Perlin noise generator", () => {
   });
 
   it("should create a 2D Perlin noise PNG image", () => {
-    const pngBuffer = PerlinNoiseImage.generate2D({ width: 64, height: 64, seed: 42, scale: 0.05 });
+    const pngBuffer = PerlinNoiseImage.generate2D({
+      width: 64,
+      height: 64,
+      seed: 42,
+      scale: 0.05,
+    });
 
     const outDir = path.resolve(process.cwd(), "tests/output");
     if (!fs.existsSync(outDir)) {

@@ -1,9 +1,4 @@
-import {
-  smoothstep,
-  lerp,
-  coserp,
-  cuberp,
-} from "../src/utils/interpolation";
+import { smoothstep, lerp, coserp, cuberp } from "../src/utils/interpolation";
 import { seededRandom, LCGSeededRandom } from "../src/utils/seeded-random";
 
 describe("interpolation", () => {
