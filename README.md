@@ -47,9 +47,9 @@ pip install noise-algorithms
 ```
 
 ```python
-from noise_algorithms import PerlinConfig, perlin_2d
+from noise_algorithms import PerlinNoise2D
 
-print(perlin_2d(12, 7, PerlinConfig(seed=42)))  # value in [-1, 1]
+print(PerlinNoise2D(seed=42).noise(12, 7))  # value in [-1, 1]
 ```
 
 See each package's README for the full API and configuration options.
@@ -61,6 +61,34 @@ packages/
   typescript/   # @quentinpigne/noise-algorithms (npm / GitHub Packages)
   python/       # noise-algorithms (PyPI)
 ```
+
+## Roadmap
+
+An **indicative** roadmap — possible directions, not firm commitments or a
+schedule. Order is not significant, and suggestions are welcome.
+
+**Noise algorithms**
+
+- [x] Perlin noise (1D / 2D / 3D)
+- [ ] Simplex / OpenSimplex noise
+- [ ] Value noise
+- [ ] Worley (cellular) noise
+- [ ] 4D Perlin noise (e.g. for looping animations)
+
+**Languages**
+
+- [x] TypeScript — npm / GitHub Packages
+- [x] Python — PyPI
+- [ ] Rust — crates.io
+- [ ] Go — pkg.go.dev
+- [ ] C / C++
+
+**Cross-cutting features**
+
+- [ ] Seamless / tileable noise
+- [ ] Domain warping
+- [ ] Analytic derivatives (gradients)
+- [ ] Consistent output across languages for a given seed
 
 ## Contributing
 
