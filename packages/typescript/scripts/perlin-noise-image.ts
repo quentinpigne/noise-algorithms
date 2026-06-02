@@ -28,6 +28,21 @@ export class PerlinNoiseImage {
     outputPath: "perlin-noise.png",
   };
 
+  /** Map a noise value in [-1, 1] to a grayscale byte in [0, 255]. */
+  private static toGray(noiseValue: number): number {
+    const normalized = (noiseValue + 1) / 2;
+    return Math.max(0, Math.min(255, Math.floor(normalized * 255)));
+  }
+
+  /** Write a grayscale value as an opaque RGBA pixel. */
+  private static setPixel(png: PNG, x: number, y: number, gray: number): void {
+    const idx = (png.width * y + x) << 2;
+    png.data[idx] = gray;
+    png.data[idx + 1] = gray;
+    png.data[idx + 2] = gray;
+    png.data[idx + 3] = 255;
+  }
+
   /**
    * Generate a 1D Perlin noise image as PNG
    * @param options Perlin noise options
@@ -36,12 +51,7 @@ export class PerlinNoiseImage {
   static generate1D(options: PerlinNoiseImageOptions = {}): Buffer {
     const opts = { ...this.DEFAULT_OPTIONS, ...options };
 
-    const png = new PNG({
-      width: opts.width!,
-      height: opts.height!,
-      colorType: 0, // Grayscale
-      inputColorType: 0,
-    });
+    const png = new PNG({ width: opts.width!, height: opts.height! });
 
     const noise = new PerlinNoise1D(
       opts.seed,
@@ -52,13 +62,10 @@ export class PerlinNoiseImage {
     );
 
     for (let x = 0; x < opts.width!; x++) {
-      const noiseValue = noise.noise(x);
-      const normalizedValue = (noiseValue + 1) / 2; // Convert from [-1, 1] to [0, 1]
-      const pixelValue = Math.floor(normalizedValue * 255);
+      const gray = PerlinNoiseImage.toGray(noise.noise(x));
 
       for (let y = 0; y < opts.height!; y++) {
-        const idx = (png.width * y + x) << 0;
-        png.data[idx] = pixelValue; // Grayscale value
+        PerlinNoiseImage.setPixel(png, x, y, gray);
       }
     }
 
@@ -73,12 +80,7 @@ export class PerlinNoiseImage {
   static generate2D(options: PerlinNoiseImageOptions = {}): Buffer {
     const opts = { ...this.DEFAULT_OPTIONS, ...options };
 
-    const png = new PNG({
-      width: opts.width!,
-      height: opts.height!,
-      colorType: 0, // Grayscale
-      inputColorType: 0,
-    });
+    const png = new PNG({ width: opts.width!, height: opts.height! });
 
     const noise = new PerlinNoise2D(
       opts.seed,
@@ -90,12 +92,12 @@ export class PerlinNoiseImage {
 
     for (let y = 0; y < opts.height!; y++) {
       for (let x = 0; x < opts.width!; x++) {
-        const noiseValue = noise.noise(x, y);
-        const normalizedValue = (noiseValue + 1) / 2; // Convert from [-1, 1] to [0, 1]
-        const pixelValue = Math.floor(normalizedValue * 255);
-
-        const idx = (png.width * y + x) << 0;
-        png.data[idx] = pixelValue; // Grayscale value
+        PerlinNoiseImage.setPixel(
+          png,
+          x,
+          y,
+          PerlinNoiseImage.toGray(noise.noise(x, y)),
+        );
       }
     }
 
@@ -114,12 +116,7 @@ export class PerlinNoiseImage {
   ): Buffer {
     const opts = { ...this.DEFAULT_OPTIONS, ...options };
 
-    const png = new PNG({
-      width: opts.width!,
-      height: opts.height!,
-      colorType: 0, // Grayscale
-      inputColorType: 0,
-    });
+    const png = new PNG({ width: opts.width!, height: opts.height! });
 
     const noise = new PerlinNoise3D(
       opts.seed,
@@ -131,12 +128,12 @@ export class PerlinNoiseImage {
 
     for (let y = 0; y < opts.height!; y++) {
       for (let x = 0; x < opts.width!; x++) {
-        const noiseValue = noise.noise(x, y, zSlice);
-        const normalizedValue = (noiseValue + 1) / 2; // Convert from [-1, 1] to [0, 1]
-        const pixelValue = Math.floor(normalizedValue * 255);
-
-        const idx = (png.width * y + x) << 0;
-        png.data[idx] = pixelValue; // Grayscale value
+        PerlinNoiseImage.setPixel(
+          png,
+          x,
+          y,
+          PerlinNoiseImage.toGray(noise.noise(x, y, zSlice)),
+        );
       }
     }
 

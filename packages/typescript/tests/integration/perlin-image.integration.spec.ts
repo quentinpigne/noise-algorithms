@@ -5,58 +5,84 @@ import path from "node:path";
 
 // Import the BUILT library from dist/ — the exact artifact published to the
 // registries, not the TypeScript sources.
-import { PerlinNoise2D } from "../../dist/perlin-noise/index.mjs";
+import {
+  PerlinNoise1D,
+  PerlinNoise2D,
+  PerlinNoise3D,
+} from "../../dist/perlin-noise/index.mjs";
 
-const WIDTH = 256;
-const HEIGHT = 256;
 const SEED = 42;
 const SCALE = 0.03;
+const SIZE = 256;
+const STRIP_HEIGHT = 64;
 
-const SNAPSHOT = path.resolve(__dirname, "../snapshots/perlin-noise-2d.png");
+const SNAPSHOT_DIR = path.resolve(__dirname, "../snapshots");
 const OUTPUT_DIR = path.resolve(__dirname, "../output");
-const OUTPUT = path.join(OUTPUT_DIR, "perlin-noise-2d.png");
 
-/** Render a deterministic 2D Perlin noise field into an RGBA PNG buffer. */
-function renderNoise(): Buffer {
-  const perlin = new PerlinNoise2D(SEED, SCALE);
-  const png = new PNG({ width: WIDTH, height: HEIGHT });
+/** Map a noise value in [-1, 1] to a grayscale byte in [0, 255]. */
+function toGray(value: number): number {
+  return Math.max(0, Math.min(255, Math.floor(((value + 1) / 2) * 255)));
+}
 
-  for (let y = 0; y < HEIGHT; y++) {
-    for (let x = 0; x < WIDTH; x++) {
-      const value = perlin.noise(x, y);
-      const gray = Math.max(
-        0,
-        Math.min(255, Math.floor(((value + 1) / 2) * 255)),
-      );
-      const idx = (WIDTH * y + x) << 2;
+/** Build an RGBA PNG buffer from a per-pixel grayscale function. */
+function renderPNG(
+  width: number,
+  height: number,
+  grayAt: (x: number, y: number) => number,
+): Buffer {
+  const png = new PNG({ width, height });
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (width * y + x) << 2;
+      const gray = grayAt(x, y);
       png.data[idx] = gray;
       png.data[idx + 1] = gray;
       png.data[idx + 2] = gray;
       png.data[idx + 3] = 255;
     }
   }
-
   return PNG.sync.write(png);
 }
 
+/** Render the noise to PNG, persist the output, and assert it matches snapshot. */
+function expectMatchesSnapshot(name: string, generated: Buffer): void {
+  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+  fs.writeFileSync(path.join(OUTPUT_DIR, name), generated);
+
+  const snapshot = path.join(SNAPSHOT_DIR, name);
+  if (process.env.UPDATE_SNAPSHOTS || !fs.existsSync(snapshot)) {
+    fs.mkdirSync(SNAPSHOT_DIR, { recursive: true });
+    fs.writeFileSync(snapshot, generated);
+  }
+
+  // Compare decoded pixels (robust to PNG encoder differences).
+  const generatedPixels = PNG.sync.read(generated).data;
+  const snapshotPixels = PNG.sync.read(fs.readFileSync(snapshot)).data;
+  expect(Buffer.compare(generatedPixels, snapshotPixels)).toBe(0);
+}
+
 describe("Perlin noise image (built library)", () => {
+  it("matches the committed 1D snapshot", () => {
+    const perlin = new PerlinNoise1D(SEED, SCALE);
+    const generated = renderPNG(SIZE, STRIP_HEIGHT, (x) =>
+      toGray(perlin.noise(x)),
+    );
+    expectMatchesSnapshot("perlin-noise-1d.png", generated);
+  });
+
   it("matches the committed 2D snapshot", () => {
-    const generated = renderNoise();
+    const perlin = new PerlinNoise2D(SEED, SCALE);
+    const generated = renderPNG(SIZE, SIZE, (x, y) =>
+      toGray(perlin.noise(x, y)),
+    );
+    expectMatchesSnapshot("perlin-noise-2d.png", generated);
+  });
 
-    // Always write the generated image so it can be inspected / diffed.
-    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-    fs.writeFileSync(OUTPUT, generated);
-
-    // Refresh the snapshot on demand or on first run.
-    if (process.env.UPDATE_SNAPSHOTS || !fs.existsSync(SNAPSHOT)) {
-      fs.mkdirSync(path.dirname(SNAPSHOT), { recursive: true });
-      fs.writeFileSync(SNAPSHOT, generated);
-    }
-
-    // Compare decoded pixels (robust to PNG encoder differences).
-    const generatedPixels = PNG.sync.read(generated).data;
-    const snapshotPixels = PNG.sync.read(fs.readFileSync(SNAPSHOT)).data;
-
-    expect(Buffer.compare(generatedPixels, snapshotPixels)).toBe(0);
+  it("matches the committed 3D snapshot (z = 0 slice)", () => {
+    const perlin = new PerlinNoise3D(SEED, SCALE);
+    const generated = renderPNG(SIZE, SIZE, (x, y) =>
+      toGray(perlin.noise(x, y, 0)),
+    );
+    expectMatchesSnapshot("perlin-noise-3d.png", generated);
   });
 });

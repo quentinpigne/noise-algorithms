@@ -6,10 +6,12 @@ monorepo.
 
 ## Preview
 
-2D Perlin noise (256×256, `seed=42`, `scale=0.03`) — the snapshot the
-integration test renders from the built wheel and verifies:
+Perlin noise rendered from the built wheel (`seed=42`, `scale=0.03`) — these are
+the snapshots the integration tests verify:
 
-![2D Perlin noise](./tests/snapshots/perlin-noise-2d.png)
+| 1D | 2D | 3D (z = 0 slice) |
+| :-: | :-: | :-: |
+| ![1D](./tests/snapshots/perlin-noise-1d.png) | ![2D](./tests/snapshots/perlin-noise-2d.png) | ![3D](./tests/snapshots/perlin-noise-3d.png) |
 
 ## Installation
 
