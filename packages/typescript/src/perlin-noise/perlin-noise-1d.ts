@@ -37,10 +37,12 @@ export class PerlinNoise1D extends PerlinNoise implements NoiseGenerator1D {
 
   /**
    * Returns the noise value at a given position
-   * @param x position on the x-axis
+   * @param coords [x] position on the x-axis
    * @returns noise value in interval [-1, 1]
    */
-  private perlinNoise(x: number): number {
+  protected perlinNoise(coords: number[]): number {
+    const [x] = coords;
+
     // Determine axis coordinates
     const x0 = Math.floor(x) & 255;
     const x1 = (x0 + 1) & 255;
@@ -67,19 +69,6 @@ export class PerlinNoise1D extends PerlinNoise implements NoiseGenerator1D {
    * @returns value in interval [-1, 1]
    */
   noise(x: number): number {
-    let value = 0;
-    let maxValue = 0;
-
-    let amplitude = 1;
-    let frequency = 1;
-
-    for (let i = 0; i < this.octaves; i++) {
-      value += this.perlinNoise(x * frequency * this.scale) * amplitude;
-      maxValue += amplitude;
-      amplitude *= this.persistence;
-      frequency *= this.lacunarity;
-    }
-
-    return value / maxValue;
+    return this.fractal([x]);
   }
 }

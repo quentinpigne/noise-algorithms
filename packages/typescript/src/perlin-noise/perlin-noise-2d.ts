@@ -62,11 +62,12 @@ export class PerlinNoise2D extends PerlinNoise implements NoiseGenerator2D {
 
   /**
    * Returns the noise value at a given position
-   * @param x position on the x-axis
-   * @param y position on the y-axis
+   * @param coords [x, y] position
    * @returns noise value in interval [-1, 1]
    */
-  private perlinNoise(x: number, y: number): number {
+  protected perlinNoise(coords: number[]): number {
+    const [x, y] = coords;
+
     // Determine grid cell coordinates
     const x0 = Math.floor(x) & 255;
     const x1 = (x0 + 1) & 255;
@@ -104,23 +105,6 @@ export class PerlinNoise2D extends PerlinNoise implements NoiseGenerator2D {
    * @returns value in interval [-1, 1]
    */
   noise(x: number, y: number): number {
-    let value = 0;
-    let maxValue = 0;
-
-    let amplitude = 1;
-    let frequency = 1;
-
-    for (let i = 0; i < this.octaves; i++) {
-      value +=
-        this.perlinNoise(
-          x * frequency * this.scale,
-          y * frequency * this.scale,
-        ) * amplitude;
-      maxValue += amplitude;
-      amplitude *= this.persistence;
-      frequency *= this.lacunarity;
-    }
-
-    return value / maxValue;
+    return this.fractal([x, y]);
   }
 }

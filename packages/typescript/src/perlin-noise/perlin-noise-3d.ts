@@ -95,7 +95,9 @@ export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
    * @param z position on the z-axis
    * @returns noise value in interval [-1, 1]
    */
-  private perlinNoise(x: number, y: number, z: number): number {
+  protected perlinNoise(coords: number[]): number {
+    const [x, y, z] = coords;
+
     // Determine grid cell coordinates
     const x0 = Math.floor(x) & 255;
     const x1 = (x0 + 1) & 255;
@@ -149,24 +151,6 @@ export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
   }
 
   noise(x: number, y: number, z: number): number {
-    let value = 0;
-    let maxValue = 0;
-
-    let amplitude = 1;
-    let frequency = 1;
-
-    for (let i = 0; i < this.octaves; i++) {
-      value +=
-        this.perlinNoise(
-          x * frequency * this.scale,
-          y * frequency * this.scale,
-          z * frequency * this.scale,
-        ) * amplitude;
-      maxValue += amplitude;
-      amplitude *= this.persistence;
-      frequency *= this.lacunarity;
-    }
-
-    return value / maxValue;
+    return this.fractal([x, y, z]);
   }
 }

@@ -51,4 +51,33 @@ export abstract class PerlinNoise extends NoiseGenerator {
     // Smoothing function 6t^5 - 15t^4 + 10t^3
     return t * t * t * (t * (t * 6 - 15) + 10);
   }
+
+  /**
+   * Generate a multi-octave (fractal) noise value at the given coordinates.
+   * @param coords position, one entry per dimension
+   * @returns value in interval [-1, 1]
+   */
+  protected fractal(coords: number[]): number {
+    let value = 0;
+    let maxValue = 0;
+
+    let amplitude = 1;
+    let frequency = 1;
+
+    for (let i = 0; i < this.octaves; i++) {
+      const scaled = coords.map((c) => c * frequency * this.scale);
+      value += this.perlinNoise(scaled) * amplitude;
+      maxValue += amplitude;
+      amplitude *= this.persistence;
+      frequency *= this.lacunarity;
+    }
+
+    return value / maxValue;
+  }
+
+  /**
+   * Single octave of Perlin noise at the given (already scaled) coordinates.
+   * Implemented per dimension.
+   */
+  protected abstract perlinNoise(coords: number[]): number;
 }
