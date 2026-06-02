@@ -4,6 +4,13 @@ A collection of noise generation algorithms in **TypeScript**, shipped as an
 ESM library with type definitions. Part of the
 [noise-algorithms](https://github.com/quentinpigne/noise-algorithms) monorepo.
 
+## Preview
+
+2D Perlin noise (256×256, `seed=42`, `scale=0.03`) — the snapshot the
+integration test renders from the built library and verifies:
+
+![2D Perlin noise](./tests/snapshots/perlin-noise-2d.png)
+
 ## Installation
 
 From npm:
@@ -68,9 +75,15 @@ new PerlinNoise2D(seed?, scale?, octaves?, lacunarity?, persistence?)
 
 ```sh
 npm install
-npm test          # run the test suite (Vitest)
-npm run build     # bundle to dist/ with type declarations (tsdown)
+npm test               # unit tests (Vitest)
+npm run build          # bundle to dist/ with type declarations (tsdown)
+npm run test:integration  # build, then render an image from dist/ and snapshot it
 ```
+
+Integration tests render a noise image from the built library and compare it to
+the committed snapshot in `tests/snapshots/`; the rendered image is written to
+`tests/output/` for inspection. Refresh the snapshot with
+`UPDATE_SNAPSHOTS=1 npm run test:integration`.
 
 A helper script under [`scripts/`](./scripts) can render the noise to PNG
 images (requires [`tsx`](https://github.com/privatenumber/tsx)):

@@ -52,6 +52,15 @@ When adding a new noise algorithm, keep the public API consistent across
 languages where possible, document it in the package README, and add tests
 (including a determinism test and output-bounds checks).
 
+### Snapshot / integration tests
+
+Each package has an integration test that imports the **built** library, renders
+a noise image and compares it to a committed snapshot in `tests/snapshots/`. The
+rendered image is written to `tests/output/` (gitignored) for inspection. If a
+change legitimately alters the output, refresh the snapshot with
+`UPDATE_SNAPSHOTS=1` (`npm run test:integration` / `uv run pytest`) and review
+the new image before committing it.
+
 ## Pull requests
 
 - Keep changes focused; one logical change per pull request.

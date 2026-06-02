@@ -4,6 +4,13 @@ A collection of noise generation algorithms in **pure Python** (no runtime
 dependencies). Part of the [noise-algorithms](https://github.com/quentinpigne/noise-algorithms)
 monorepo.
 
+## Preview
+
+2D Perlin noise (256×256, `seed=42`, `scale=0.03`) — the snapshot the
+integration test renders from the built wheel and verifies:
+
+![2D Perlin noise](./tests/snapshots/perlin-noise-2d.png)
+
 ## Installation
 
 ```sh
@@ -45,11 +52,16 @@ This package uses [uv](https://docs.astral.sh/uv/).
 
 ```sh
 uv sync                 # install dev dependencies
-uv run pytest           # run the test suite
+uv run pytest           # unit + integration tests
 uv run ruff check .     # lint
 uv run ruff format .    # format
 uv build                # build sdist + wheel
 ```
+
+The integration test (`tests/integration/`) builds the wheel, imports it from an
+isolated environment, renders a noise image and compares it to the committed
+snapshot in `tests/snapshots/`; the rendered image is written to `tests/output/`.
+Refresh the snapshot with `UPDATE_SNAPSHOTS=1 uv run pytest tests/integration`.
 
 ### Generating a preview image
 

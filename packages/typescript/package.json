@@ -52,6 +52,7 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:ui": "vitest ui",
+    "test:integration": "tsdown && vitest run --config vitest.integration.config.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

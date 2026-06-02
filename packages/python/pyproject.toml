@@ -35,7 +35,7 @@ Issues = "https://github.com/quentinpigne/noise-algorithms/issues"
 images = ["numpy", "matplotlib"]
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = ["pytest>=8", "ruff>=0.6", "pillow>=10"]
 
 [build-system]
 requires = ["hatchling"]
@@ -53,3 +53,6 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "integration: tests that import the built wheel in an isolated environment",
+]

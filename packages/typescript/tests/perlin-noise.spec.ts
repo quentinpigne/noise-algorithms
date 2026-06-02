@@ -1,9 +1,6 @@
 import { PerlinNoise1D } from "../src/perlin-noise/perlin-noise-1d";
 import { PerlinNoise2D } from "../src/perlin-noise/perlin-noise-2d";
 import { PerlinNoise3D } from "../src/perlin-noise/perlin-noise-3d";
-import { PerlinNoiseImage } from "../scripts/perlin-noise-image";
-import fs from "fs";
-import path from "path";
 
 describe("Perlin noise generator", () => {
   it("should generate 1D Perlin noise", () => {
@@ -60,26 +57,5 @@ describe("Perlin noise generator", () => {
       values.add(perlin.noise(i * 0.5, i * 0.25, i * 0.75));
     }
     expect(values.size).toBeGreaterThan(100);
-  });
-
-  it("should create a 2D Perlin noise PNG image", () => {
-    const pngBuffer = PerlinNoiseImage.generate2D({
-      width: 64,
-      height: 64,
-      seed: 42,
-      scale: 0.05,
-    });
-
-    const outDir = path.resolve(process.cwd(), "tests/output");
-    if (!fs.existsSync(outDir)) {
-      fs.mkdirSync(outDir, { recursive: true });
-    }
-
-    const outPath = path.join(outDir, "perlin-2d-test.png");
-    PerlinNoiseImage.savePNG(pngBuffer, outPath);
-
-    expect(fs.existsSync(outPath)).toBe(true);
-    const stats = fs.statSync(outPath);
-    expect(stats.size).toBeGreaterThan(0);
   });
 });
