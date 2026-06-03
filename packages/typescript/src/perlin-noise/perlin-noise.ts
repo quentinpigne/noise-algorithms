@@ -1,10 +1,16 @@
 import { NoiseGenerator } from "../noise-generator";
+import { lerp } from "../utils/interpolation";
 import { seededRandom } from "../utils/seeded-random";
 
 /**
  * Abstract class for Perlin noise generators
  * @see https://en.wikipedia.org/wiki/Perlin_noise
- * It should be implemented for every dimension (1D, 2D, 3D, ...)
+ *
+ * The base implements a dimension-agnostic engine: hashing folds the
+ * permutation table over the coordinates, every corner of the surrounding
+ * hypercube contributes a gradient dot product, and the contributions are
+ * combined by a pairwise lerp reduction along each axis. Subclasses only
+ * provide their dimension-specific gradient set via `gradient`.
  */
 export abstract class PerlinNoise extends NoiseGenerator {
   protected scale: number;
@@ -76,8 +82,51 @@ export abstract class PerlinNoise extends NoiseGenerator {
   }
 
   /**
-   * Single octave of Perlin noise at the given (already scaled) coordinates.
+   * Single octave of N-dimensional Perlin noise at the given (already scaled)
+   * coordinates.
+   * @param coords position, one entry per dimension
+   * @returns noise value in interval [-1, 1]
+   */
+  protected perlinNoise(coords: number[]): number {
+    const n = coords.length;
+
+    const floors = coords.map((c) => Math.floor(c));
+    const cells = floors.map((f) => f & 255);
+    const fracs = coords.map((c, axis) => c - floors[axis]);
+    const faded = fracs.map((f) => this.fade(f));
+
+    // Noise contribution of every corner of the surrounding hypercube; the
+    // corner index encodes its offsets (bit `axis` = offset along `axis`).
+    let values: number[] = [];
+    for (let corner = 0; corner < 1 << n; corner++) {
+      let h = this.permutationTable[(cells[0] + (corner & 1)) & 255];
+      for (let axis = 1; axis < n; axis++) {
+        h =
+          this.permutationTable[
+            h + ((cells[axis] + ((corner >> axis) & 1)) & 255)
+          ];
+      }
+      h = this.permutationTable[h];
+
+      const displacement = fracs.map((f, axis) => f - ((corner >> axis) & 1));
+      values.push(this.gradient(h, displacement));
+    }
+
+    // Pairwise lerp reduction along each axis: 2^n -> 2^(n-1) -> ... -> 1.
+    for (let axis = 0; axis < n; axis++) {
+      const reduced: number[] = [];
+      for (let i = 0; i < values.length; i += 2) {
+        reduced.push(lerp(values[i], values[i + 1], faded[axis]));
+      }
+      values = reduced;
+    }
+
+    return values[0];
+  }
+
+  /**
+   * Dot product of the hashed gradient with the corner displacement.
    * Implemented per dimension.
    */
-  protected abstract perlinNoise(coords: number[]): number;
+  protected abstract gradient(hash: number, displacement: number[]): number;
 }
