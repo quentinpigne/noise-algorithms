@@ -1,8 +1,5 @@
 """1D Perlin noise."""
 
-import math
-
-from .._interpolation import fade, lerp
 from ._base import PerlinNoise
 
 
@@ -13,21 +10,10 @@ class PerlinNoise1D(PerlinNoise):
         """Return fractal 1D Perlin noise at ``x`` in the ``[-1, 1]`` interval."""
         return self._fractal(x)
 
-    def _octave(self, x: float) -> float:
-        perm = self._perm
-        x0 = math.floor(x) & 255
-        x1 = (x0 + 1) & 255
-
-        xf = x - math.floor(x)
-        u = fade(xf)
-
-        h0 = perm[perm[x0]]
-        h1 = perm[perm[x1]]
-
-        n0 = xf if (h0 & 1) == 0 else -xf
-        n1 = (xf - 1) if (h1 & 1) == 0 else -(xf - 1)
-
-        return lerp(n0, n1, u)
+    def _gradient(self, h: int, displacement: list[float]) -> float:
+        # 1D gradient: keep or mirror the displacement depending on the hash.
+        d = displacement[0]
+        return d if (h & 1) == 0 else -d
 
 
 def perlin_1d(
