@@ -5,8 +5,6 @@ exposing a matching ``noise`` method satisfies them (structural typing), so user
 code can be written against the protocol rather than a concrete class.
 """
 
-from __future__ import annotations
-
 from typing import Protocol, runtime_checkable
 
 

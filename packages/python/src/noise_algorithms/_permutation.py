@@ -6,8 +6,6 @@ pure-Python, dependency-free runtime. Each noise generator builds its table once
 in its constructor and holds it for its lifetime.
 """
 
-from __future__ import annotations
-
 import random
 
 

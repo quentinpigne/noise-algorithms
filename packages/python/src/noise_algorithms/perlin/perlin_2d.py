@@ -1,7 +1,5 @@
 """2D Perlin noise."""
 
-from __future__ import annotations
-
 import math
 
 from .._interpolation import fade, lerp

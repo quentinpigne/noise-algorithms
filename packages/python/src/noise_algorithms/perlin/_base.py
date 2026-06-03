@@ -3,8 +3,6 @@
 See https://en.wikipedia.org/wiki/Perlin_noise
 """
 
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 
 from .._permutation import build_permutation

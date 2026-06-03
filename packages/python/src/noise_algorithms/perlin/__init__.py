@@ -13,8 +13,6 @@ Two equivalent APIs are provided:
 Every generator returns fractal (multi-octave) noise in the ``[-1, 1]`` interval.
 """
 
-from __future__ import annotations
-
 from ._base import PerlinNoise
 from .perlin_1d import PerlinNoise1D, perlin_1d
 from .perlin_2d import PerlinNoise2D, perlin_2d

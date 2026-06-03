@@ -1,7 +1,5 @@
 """A collection of noise generation algorithms in pure Python."""
 
-from __future__ import annotations
-
 from .interfaces import NoiseGenerator1D, NoiseGenerator2D, NoiseGenerator3D
 from .perlin import (
     PerlinNoise,
