@@ -319,7 +319,7 @@ The single octave (`PerlinNoise._octave`) is exactly §7 in code:
 
 ```python
 def _octave(self, *coords: float) -> float:
-    perm = self._perm
+    permutation = self._permutation
     n = len(coords)
 
     floors = [math.floor(c) for c in coords]
@@ -329,10 +329,10 @@ def _octave(self, *coords: float) -> float:
 
     values = []
     for corner in range(1 << n):                            # §7 pattern 1: 2ⁿ corners
-        h = perm[(cells[0] + (corner & 1)) & 255]           # §7 pattern 2: hash fold
+        h = permutation[(cells[0] + (corner & 1)) & 255]    # §7 pattern 2: hash fold
         for axis in range(1, n):
-            h = perm[h + ((cells[axis] + ((corner >> axis) & 1)) & 255)]
-        h = perm[h]
+            h = permutation[h + ((cells[axis] + ((corner >> axis) & 1)) & 255)]
+        h = permutation[h]
 
         displacement = [fracs[axis] - ((corner >> axis) & 1) for axis in range(n)]
         values.append(self._gradient(h, displacement))      # dimension-specific
@@ -384,7 +384,7 @@ perlin_2d(12, 7, seed=42, scale=0.05)   # convenience, builds a generator per ca
 ### 9.5 TypeScript parity
 
 The TypeScript package (`packages/typescript`) uses the same architecture: an
-abstract `PerlinNoise` base with the generic engine (`perlinNoise(coords)` and
+abstract `PerlinNoise` base with the generic engine (`octave(coords)` and
 `fractal(coords)`), and `PerlinNoise1D/2D/3D` subclasses supplying
 `gradient(hash, displacement)`. The differences are idiomatic, not structural:
 the TS constructor is positional (`new PerlinNoise2D(seed, scale, …)`) while

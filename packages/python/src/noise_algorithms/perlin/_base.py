@@ -38,7 +38,7 @@ class PerlinNoise(ABC):
         lacunarity: float = 2.0,
         persistence: float = 0.5,
     ) -> None:
-        self._perm = build_permutation(seed)
+        self._permutation = build_permutation(seed)
         self._scale = scale
         self._octaves = octaves
         self._lacunarity = lacunarity
@@ -62,7 +62,7 @@ class PerlinNoise(ABC):
 
     def _octave(self, *coords: float) -> float:
         """Single octave of N-dimensional Perlin noise at the given coordinates."""
-        perm = self._perm
+        permutation = self._permutation
         n = len(coords)
 
         floors = [math.floor(c) for c in coords]
@@ -74,10 +74,10 @@ class PerlinNoise(ABC):
         # corner index encodes its offsets (bit ``axis`` = offset along ``axis``).
         values = []
         for corner in range(1 << n):
-            h = perm[(cells[0] + (corner & 1)) & 255]
+            h = permutation[(cells[0] + (corner & 1)) & 255]
             for axis in range(1, n):
-                h = perm[h + ((cells[axis] + ((corner >> axis) & 1)) & 255)]
-            h = perm[h]
+                h = permutation[h + ((cells[axis] + ((corner >> axis) & 1)) & 255)]
+            h = permutation[h]
 
             displacement = [fracs[axis] - ((corner >> axis) & 1) for axis in range(n)]
             values.append(self._gradient(h, displacement))

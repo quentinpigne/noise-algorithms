@@ -18,7 +18,7 @@ export abstract class PerlinNoise extends NoiseGenerator {
   protected lacunarity: number;
   protected persistence: number;
 
-  protected permutationTable!: number[];
+  protected permutation!: number[];
 
   constructor(
     seed?: number,
@@ -32,10 +32,10 @@ export abstract class PerlinNoise extends NoiseGenerator {
     this.octaves = octaves;
     this.lacunarity = lacunarity;
     this.persistence = persistence;
-    this.initPermutationTable();
+    this.permutation = this.buildPermutation();
   }
 
-  private initPermutationTable(): void {
+  private buildPermutation(): number[] {
     // Permutation table based on Perlin's original algorithm
     const p: number[] = [];
     for (let i = 0; i < 256; i++) {
@@ -50,7 +50,7 @@ export abstract class PerlinNoise extends NoiseGenerator {
     }
 
     // Duplication to avoid overflows
-    this.permutationTable = [...p, ...p];
+    return [...p, ...p];
   }
 
   protected fade(t: number): number {
@@ -72,7 +72,7 @@ export abstract class PerlinNoise extends NoiseGenerator {
 
     for (let i = 0; i < this.octaves; i++) {
       const scaled = coords.map((c) => c * frequency * this.scale);
-      value += this.perlinNoise(scaled) * amplitude;
+      value += this.octave(scaled) * amplitude;
       maxValue += amplitude;
       amplitude *= this.persistence;
       frequency *= this.lacunarity;
@@ -87,7 +87,7 @@ export abstract class PerlinNoise extends NoiseGenerator {
    * @param coords position, one entry per dimension
    * @returns noise value in interval [-1, 1]
    */
-  protected perlinNoise(coords: number[]): number {
+  protected octave(coords: number[]): number {
     const n = coords.length;
 
     const floors = coords.map((c) => Math.floor(c));
@@ -99,14 +99,14 @@ export abstract class PerlinNoise extends NoiseGenerator {
     // corner index encodes its offsets (bit `axis` = offset along `axis`).
     let values: number[] = [];
     for (let corner = 0; corner < 1 << n; corner++) {
-      let h = this.permutationTable[(cells[0] + (corner & 1)) & 255];
+      let h = this.permutation[(cells[0] + (corner & 1)) & 255];
       for (let axis = 1; axis < n; axis++) {
         h =
-          this.permutationTable[
+          this.permutation[
             h + ((cells[axis] + ((corner >> axis) & 1)) & 255)
           ];
       }
-      h = this.permutationTable[h];
+      h = this.permutation[h];
 
       const displacement = fracs.map((f, axis) => f - ((corner >> axis) & 1));
       values.push(this.gradient(h, displacement));
