@@ -102,9 +102,7 @@ export abstract class PerlinNoise extends NoiseGenerator {
       let h = this.permutation[(cells[0] + (corner & 1)) & 255];
       for (let axis = 1; axis < n; axis++) {
         h =
-          this.permutation[
-            h + ((cells[axis] + ((corner >> axis) & 1)) & 255)
-          ];
+          this.permutation[h + ((cells[axis] + ((corner >> axis) & 1)) & 255)];
       }
       h = this.permutation[h];
 
