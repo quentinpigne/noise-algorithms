@@ -19,4 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   by the example script.
 - `src/` layout with a per-dimension `perlin` subpackage, `py.typed`, hatchling
   build backend and PyPI metadata.
-- pytest suite and ruff lint/format configuration.
+- Requires Python 3.10 or newer.
+- pytest suite (including an integration test that renders images from the built
+  wheel and compares them to committed snapshots) and ruff lint/format configuration.

@@ -19,6 +19,8 @@ the snapshots the integration tests verify:
 pip install noise-algorithms
 ```
 
+Requires Python 3.10 or newer; no runtime dependencies.
+
 ## Usage
 
 Two equivalent APIs are provided. Every generator returns fractal (multi-octave)

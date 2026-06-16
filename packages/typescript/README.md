@@ -21,7 +21,7 @@ From npm:
 npm install @quentinpigne/noise-algorithms
 ```
 
-This package is also published to **GitHub Packages**. To install from there,
+Requires Node.js ≥ 18. This package is also published to **GitHub Packages**. To install from there,
 add a scoped registry to your `.npmrc`:
 
 ```
@@ -80,6 +80,8 @@ npm install
 npm test               # unit tests (Vitest)
 npm run build          # bundle to dist/ with type declarations (tsdown)
 npm run test:integration  # build, then render an image from dist/ and snapshot it
+npm run lint           # ESLint
+npm run format         # Prettier (write); use format:check in CI
 ```
 
 Integration tests render a noise image from the built library and compare it to

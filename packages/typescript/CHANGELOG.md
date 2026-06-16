@@ -26,3 +26,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Unit tests for the interpolation and seeded-random utilities, plus regression
   tests for determinism, zero-seed handling and output bounds.
+- An integration test that renders images from the built library (`dist/`) and
+  compares them to committed snapshots.

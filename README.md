@@ -25,6 +25,9 @@ Each implementation supports fractal (multi-octave) noise configured with
 `seed`, `scale`, `octaves`, `lacunarity` and `persistence`, and returns values
 in the `[-1, 1]` interval.
 
+For a detailed explanation of how Perlin noise works (1D → N-D) and how it is
+implemented here, see [`docs/PERLIN_NOISE.md`](./docs/PERLIN_NOISE.md).
+
 ## Quick start
 
 **TypeScript**
