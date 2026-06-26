@@ -3,16 +3,6 @@ import { NoiseGenerator1D } from "../interfaces/noise-generator-1d";
 import { PerlinNoise } from "./perlin-noise";
 
 export class PerlinNoise1D extends PerlinNoise implements NoiseGenerator1D {
-  constructor(
-    seed?: number,
-    scale: number = 0.01,
-    octaves: number = 4,
-    lacunarity: number = 2,
-    persistence: number = 0.5,
-  ) {
-    super(seed, scale, octaves, lacunarity, persistence);
-  }
-
   /** 1D Gradient : keeps or mirrors the displacement depending on the hash
    * @param hash hash of the position
    * @param displacement [x] displacement from the corner

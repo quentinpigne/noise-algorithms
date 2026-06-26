@@ -32,6 +32,7 @@ class PerlinNoise(ABC):
 
     def __init__(
         self,
+        *,
         seed: int = 0,
         scale: float = 0.01,
         octaves: int = 4,

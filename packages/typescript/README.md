@@ -41,11 +41,11 @@ import {
   PerlinNoise3D,
 } from "@quentinpigne/noise-algorithms/perlin-noise";
 
-const perlin = new PerlinNoise2D(42);
+const perlin = new PerlinNoise2D({ seed: 42 });
 const value = perlin.noise(12, 7); // [-1, 1]
 
-new PerlinNoise1D(42).noise(3);
-new PerlinNoise3D(42).noise(3, 4, 5);
+new PerlinNoise1D({ seed: 42 }).noise(3);
+new PerlinNoise3D({ seed: 42 }).noise(3, 4, 5);
 ```
 
 The package root re-exports the shared abstractions and interfaces:
@@ -61,8 +61,10 @@ import {
 
 ### Constructor parameters
 
+Generators take a single options object; every field is optional.
+
 ```ts
-new PerlinNoise2D(seed?, scale?, octaves?, lacunarity?, persistence?)
+new PerlinNoise2D({ seed?, scale?, octaves?, lacunarity?, persistence? });
 ```
 
 | Parameter     | Default | Description                                             |

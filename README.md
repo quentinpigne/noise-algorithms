@@ -39,7 +39,7 @@ npm install @quentinpigne/noise-algorithms
 ```ts
 import { PerlinNoise2D } from "@quentinpigne/noise-algorithms/perlin-noise";
 
-const perlin = new PerlinNoise2D(42);
+const perlin = new PerlinNoise2D({ seed: 42 });
 console.log(perlin.noise(12, 7)); // value in [-1, 1]
 ```
 

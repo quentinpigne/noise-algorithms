@@ -387,8 +387,10 @@ The TypeScript package (`packages/typescript`) uses the same architecture: an
 abstract `PerlinNoise` base with the generic engine (`octave(coords)` and
 `fractal(coords)`), and `PerlinNoise1D/2D/3D` subclasses supplying
 `gradient(hash, displacement)`. The differences are idiomatic, not structural:
-the TS constructor is positional (`new PerlinNoise2D(seed, scale, …)`) while
-Python uses keyword arguments.
+TS takes a single options object (`new PerlinNoise2D({ seed, scale, … })`) while
+Python uses keyword-only arguments (`PerlinNoise2D(seed=…, scale=…)`). Both make
+every parameter optional and named, so new parameters can be added without
+breaking existing call sites.
 
 > **Cross-language note.** The two packages use different (language-native)
 > pseudo-random generators to build the permutation table, so **the same seed

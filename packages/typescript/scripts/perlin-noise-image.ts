@@ -53,13 +53,7 @@ export class PerlinNoiseImage {
 
     const png = new PNG({ width: opts.width!, height: opts.height! });
 
-    const noise = new PerlinNoise1D(
-      opts.seed,
-      opts.scale,
-      opts.octaves,
-      opts.lacunarity,
-      opts.persistence,
-    );
+    const noise = new PerlinNoise1D(opts);
 
     for (let x = 0; x < opts.width!; x++) {
       const gray = PerlinNoiseImage.toGray(noise.noise(x));
@@ -82,13 +76,7 @@ export class PerlinNoiseImage {
 
     const png = new PNG({ width: opts.width!, height: opts.height! });
 
-    const noise = new PerlinNoise2D(
-      opts.seed,
-      opts.scale,
-      opts.octaves,
-      opts.lacunarity,
-      opts.persistence,
-    );
+    const noise = new PerlinNoise2D(opts);
 
     for (let y = 0; y < opts.height!; y++) {
       for (let x = 0; x < opts.width!; x++) {
@@ -118,13 +106,7 @@ export class PerlinNoiseImage {
 
     const png = new PNG({ width: opts.width!, height: opts.height! });
 
-    const noise = new PerlinNoise3D(
-      opts.seed,
-      opts.scale,
-      opts.octaves,
-      opts.lacunarity,
-      opts.persistence,
-    );
+    const noise = new PerlinNoise3D(opts);
 
     for (let y = 0; y < opts.height!; y++) {
       for (let x = 0; x < opts.width!; x++) {

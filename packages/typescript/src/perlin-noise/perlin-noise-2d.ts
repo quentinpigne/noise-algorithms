@@ -15,16 +15,6 @@ const VECTORS_2D = [
 ];
 
 export class PerlinNoise2D extends PerlinNoise implements NoiseGenerator2D {
-  constructor(
-    seed?: number,
-    scale: number = 0.01,
-    octaves: number = 4,
-    lacunarity: number = 2,
-    persistence: number = 0.5,
-  ) {
-    super(seed, scale, octaves, lacunarity, persistence);
-  }
-
   /** 2D Gradient : returns the dot product of the gradient vector and the vector from the grid point
    * @param hash hash of the position
    * @param displacement [x, y] displacement from the corner

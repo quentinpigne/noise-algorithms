@@ -1,6 +1,17 @@
-import { NoiseGenerator } from "../noise-generator";
+import { NoiseGenerator, NoiseGeneratorOptions } from "../noise-generator";
 import { lerp } from "../utils/interpolation";
 import { seededRandom } from "../utils/seeded-random";
+
+export interface PerlinOptions extends NoiseGeneratorOptions {
+  /** Base frequency multiplier applied to the coordinates. Defaults to `0.01`. */
+  scale?: number;
+  /** Number of noise layers summed together. Defaults to `4`. */
+  octaves?: number;
+  /** Frequency multiplier between successive octaves. Defaults to `2`. */
+  lacunarity?: number;
+  /** Amplitude multiplier between successive octaves. Defaults to `0.5`. */
+  persistence?: number;
+}
 
 /**
  * Abstract class for Perlin noise generators
@@ -20,18 +31,12 @@ export abstract class PerlinNoise extends NoiseGenerator {
 
   protected permutation!: number[];
 
-  constructor(
-    seed?: number,
-    scale: number = 0.01,
-    octaves: number = 4,
-    lacunarity: number = 2,
-    persistence: number = 0.5,
-  ) {
-    super(seed);
-    this.scale = scale;
-    this.octaves = octaves;
-    this.lacunarity = lacunarity;
-    this.persistence = persistence;
+  constructor(options: PerlinOptions = {}) {
+    super(options);
+    this.scale = options.scale ?? 0.01;
+    this.octaves = options.octaves ?? 4;
+    this.lacunarity = options.lacunarity ?? 2;
+    this.persistence = options.persistence ?? 0.5;
     this.permutation = this.buildPermutation();
   }
 
