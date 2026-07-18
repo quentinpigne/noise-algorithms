@@ -78,6 +78,37 @@ accept `seed` plus all of the above.
 The `noise_algorithms.NoiseGenerator{1,2,3}D` protocols describe the `noise`
 contract if you want to type against it.
 
+### Sampling over a region
+
+Most of the time you want a whole curve, image or volume rather than a single
+value. The generic `sample_line` / `sample_grid` / `sample_volume` helpers take
+_any_ generator (single-octave or fractal) and return nested lists:
+
+```python
+from noise_algorithms import FractalPerlinNoise2D, sample_grid
+
+gen = FractalPerlinNoise2D(seed=42, frequency=0.03)
+image = sample_grid(gen, width=256, height=256)  # image[y][x] in [-1, 1]
+```
+
+- `sample_line(gen, count=…)` → `list[float]`
+- `sample_grid(gen, width=…, height=…)` → `list[list[float]]` (`grid[y][x]`)
+- `sample_volume(gen, width=…, height=…, depth=…)` → `list[list[list[float]]]` (`volume[z][y][x]`)
+
+Each also accepts an optional origin (`start` / `start_x` / `start_y` /
+`start_z`) and `step` — sample `i` maps to coordinate `start + i * step`
+(defaults: origin `0`, step `1`).
+
+For the common one-liner, one-shot region helpers build the generator and sample
+it in a single call — `perlin_line` / `perlin_grid` / `perlin_volume` and their
+`fractal_perlin_…` counterparts:
+
+```python
+from noise_algorithms import fractal_perlin_grid
+
+image = fractal_perlin_grid(width=256, height=256, seed=42, frequency=0.03)
+```
+
 ## Development
 
 This package uses [uv](https://docs.astral.sh/uv/).

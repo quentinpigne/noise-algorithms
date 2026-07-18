@@ -1,6 +1,7 @@
 import { UNIT } from "../utils/constants";
 import { NoiseGenerator3D } from "../interfaces/noise-generator-3d";
 import { NoiseGeneratorOptions } from "../noise-generator";
+import { sampleVolume, VolumeRegion } from "../sampling";
 
 import { PerlinNoise } from "./perlin-noise";
 
@@ -58,4 +59,16 @@ export function perlin3D(
   options: NoiseGeneratorOptions = {},
 ): number {
   return new PerlinNoise3D(options).noise(x, y, z);
+}
+
+/**
+ * One-shot single-octave 3D Perlin noise over a regular volume.
+ * Builds a {@link PerlinNoise3D} and samples it with {@link sampleVolume}.
+ * @returns a `depth × height × width` nested array (`volume[z][y][x]`), values in [-1, 1]
+ */
+export function perlinVolume(
+  options: NoiseGeneratorOptions & VolumeRegion,
+): number[][][] {
+  const { seed, ...region } = options;
+  return sampleVolume(new PerlinNoise3D({ seed }), region);
 }

@@ -1,6 +1,7 @@
 """1D Perlin noise."""
 
 from ..fractal_noise_generator import FractalNoiseGenerator
+from ..sampling import sample_line
 from ._base import PerlinNoise
 
 
@@ -23,6 +24,21 @@ def perlin_1d(x: float, *, seed: int = 0) -> float:
     Builds a :class:`PerlinNoise1D` per call; reuse an instance for loops.
     """
     return PerlinNoise1D(seed=seed).noise(x)
+
+
+def perlin_line(
+    *,
+    count: int,
+    seed: int = 0,
+    start: float = 0.0,
+    step: float = 1.0,
+) -> list[float]:
+    """One-shot single octave of 1D Perlin noise over a regular interval — a curve.
+
+    Builds a :class:`PerlinNoise1D` and samples it with
+    :func:`~noise_algorithms.sample_line`.
+    """
+    return sample_line(PerlinNoise1D(seed=seed), count=count, start=start, step=step)
 
 
 class FractalPerlinNoise1D(FractalNoiseGenerator):
@@ -76,3 +92,33 @@ def fractal_perlin_1d(
         persistence=persistence,
         frequency=frequency,
     ).noise(x)
+
+
+def fractal_perlin_line(
+    *,
+    count: int,
+    seed: int = 0,
+    octaves: int = 4,
+    lacunarity: float = 2.0,
+    persistence: float = 0.5,
+    frequency: float = 0.01,
+    start: float = 0.0,
+    step: float = 1.0,
+) -> list[float]:
+    """One-shot fractal 1D Perlin noise over a regular interval — a curve.
+
+    Builds a :class:`FractalPerlinNoise1D` and samples it with
+    :func:`~noise_algorithms.sample_line`.
+    """
+    return sample_line(
+        FractalPerlinNoise1D(
+            seed=seed,
+            octaves=octaves,
+            lacunarity=lacunarity,
+            persistence=persistence,
+            frequency=frequency,
+        ),
+        count=count,
+        start=start,
+        step=step,
+    )

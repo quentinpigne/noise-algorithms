@@ -100,6 +100,44 @@ new FractalPerlinNoise2D({ seed?, octaves?, lacunarity?, persistence?, frequency
 The `FractalPerlinNoise{1,2,3}D` classes and `fractalPerlin{1,2,3}D` functions
 accept `seed` plus all of the above.
 
+### Sampling over a region
+
+Most of the time you want a whole curve, image or volume rather than a single
+value. The generic `sampleLine` / `sampleGrid` / `sampleVolume` helpers take
+_any_ generator (single-octave or fractal) and return nested arrays:
+
+```ts
+import { FractalPerlinNoise2D } from "@quentinpigne/noise-algorithms/perlin-noise";
+import { sampleGrid } from "@quentinpigne/noise-algorithms";
+
+const gen = new FractalPerlinNoise2D({ seed: 42, frequency: 0.03 });
+const image = sampleGrid(gen, { width: 256, height: 256 }); // image[y][x] in [-1, 1]
+```
+
+- `sampleLine(gen, { count })` → `number[]`
+- `sampleGrid(gen, { width, height })` → `number[][]` (`grid[y][x]`)
+- `sampleVolume(gen, { width, height, depth })` → `number[][][]` (`volume[z][y][x]`)
+
+Each also accepts an optional origin (`start` / `startX` / `startY` / `startZ`)
+and `step` — sample `i` maps to coordinate `start + i * step` (defaults: origin
+`0`, step `1`).
+
+For the common one-liner, the `perlin-noise` entry point also ships one-shot
+region helpers that build the generator and sample it in a single call —
+`perlinLine` / `perlinGrid` / `perlinVolume` and their `fractalPerlin…`
+counterparts:
+
+```ts
+import { fractalPerlinGrid } from "@quentinpigne/noise-algorithms/perlin-noise";
+
+const image = fractalPerlinGrid({
+  seed: 42,
+  frequency: 0.03,
+  width: 256,
+  height: 256,
+});
+```
+
 ## Development
 
 ```sh

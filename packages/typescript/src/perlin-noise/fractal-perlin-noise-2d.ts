@@ -1,5 +1,6 @@
 import { FractalNoiseGenerator } from "../fractal-noise-generator";
 import { FractalNoiseGenerator2D } from "../interfaces/fractal-noise-generator-2d";
+import { sampleGrid, GridRegion } from "../sampling";
 
 import { PerlinNoise2D } from "./perlin-noise-2d";
 import { FractalPerlinOptions } from "./fractal-perlin-noise-1d";
@@ -48,4 +49,22 @@ export function fractalPerlin2D(
   options: FractalPerlinOptions = {},
 ): number {
   return new FractalPerlinNoise2D(options).noise(x, y);
+}
+
+/**
+ * One-shot fractal 2D Perlin noise over a regular grid — e.g. an image.
+ * Builds a {@link FractalPerlinNoise2D} and samples it with {@link sampleGrid}.
+ * @returns a `height × width` nested array (`grid[y][x]`), values in [-1, 1]
+ */
+export function fractalPerlinGrid(
+  options: FractalPerlinOptions & GridRegion,
+): number[][] {
+  const { width, height, startX, startY, step, ...generator } = options;
+  return sampleGrid(new FractalPerlinNoise2D(generator), {
+    width,
+    height,
+    startX,
+    startY,
+    step,
+  });
 }

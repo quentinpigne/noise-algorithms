@@ -1,5 +1,6 @@
 import { NoiseGenerator1D } from "../interfaces/noise-generator-1d";
 import { NoiseGeneratorOptions } from "../noise-generator";
+import { sampleLine, LineRegion } from "../sampling";
 
 import { PerlinNoise } from "./perlin-noise";
 
@@ -35,4 +36,16 @@ export function perlin1D(
   options: NoiseGeneratorOptions = {},
 ): number {
   return new PerlinNoise1D(options).noise(x);
+}
+
+/**
+ * One-shot single-octave 1D Perlin noise over a regular interval — e.g. a curve.
+ * Builds a {@link PerlinNoise1D} and samples it with {@link sampleLine}.
+ * @returns an array of `count` values, each in [-1, 1]
+ */
+export function perlinLine(
+  options: NoiseGeneratorOptions & LineRegion,
+): number[] {
+  const { seed, ...region } = options;
+  return sampleLine(new PerlinNoise1D({ seed }), region);
 }

@@ -1,5 +1,6 @@
 import { FractalNoiseGenerator } from "../fractal-noise-generator";
 import { FractalNoiseGenerator3D } from "../interfaces/fractal-noise-generator-3d";
+import { sampleVolume, VolumeRegion } from "../sampling";
 
 import { PerlinNoise3D } from "./perlin-noise-3d";
 import { FractalPerlinOptions } from "./fractal-perlin-noise-1d";
@@ -51,4 +52,25 @@ export function fractalPerlin3D(
   options: FractalPerlinOptions = {},
 ): number {
   return new FractalPerlinNoise3D(options).noise(x, y, z);
+}
+
+/**
+ * One-shot fractal 3D Perlin noise over a regular volume.
+ * Builds a {@link FractalPerlinNoise3D} and samples it with {@link sampleVolume}.
+ * @returns a `depth × height × width` nested array (`volume[z][y][x]`), values in [-1, 1]
+ */
+export function fractalPerlinVolume(
+  options: FractalPerlinOptions & VolumeRegion,
+): number[][][] {
+  const { width, height, depth, startX, startY, startZ, step, ...generator } =
+    options;
+  return sampleVolume(new FractalPerlinNoise3D(generator), {
+    width,
+    height,
+    depth,
+    startX,
+    startY,
+    startZ,
+    step,
+  });
 }

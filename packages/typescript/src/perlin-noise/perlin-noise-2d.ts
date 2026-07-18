@@ -1,6 +1,7 @@
 import { UNIT } from "../utils/constants";
 import { NoiseGenerator2D } from "../interfaces/noise-generator-2d";
 import { NoiseGeneratorOptions } from "../noise-generator";
+import { sampleGrid, GridRegion } from "../sampling";
 
 import { PerlinNoise } from "./perlin-noise";
 
@@ -50,4 +51,16 @@ export function perlin2D(
   options: NoiseGeneratorOptions = {},
 ): number {
   return new PerlinNoise2D(options).noise(x, y);
+}
+
+/**
+ * One-shot single-octave 2D Perlin noise over a regular grid — e.g. an image.
+ * Builds a {@link PerlinNoise2D} and samples it with {@link sampleGrid}.
+ * @returns a `height × width` nested array (`grid[y][x]`), values in [-1, 1]
+ */
+export function perlinGrid(
+  options: NoiseGeneratorOptions & GridRegion,
+): number[][] {
+  const { seed, ...region } = options;
+  return sampleGrid(new PerlinNoise2D({ seed }), region);
 }

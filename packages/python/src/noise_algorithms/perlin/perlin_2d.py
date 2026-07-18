@@ -3,6 +3,7 @@
 import math
 
 from ..fractal_noise_generator import FractalNoiseGenerator
+from ..sampling import sample_grid
 from ._base import PerlinNoise
 
 _UNIT = 1.0 / math.sqrt(2)
@@ -38,6 +39,30 @@ def perlin_2d(x: float, y: float, *, seed: int = 0) -> float:
     Builds a :class:`PerlinNoise2D` per call; reuse an instance for loops.
     """
     return PerlinNoise2D(seed=seed).noise(x, y)
+
+
+def perlin_grid(
+    *,
+    width: int,
+    height: int,
+    seed: int = 0,
+    start_x: float = 0.0,
+    start_y: float = 0.0,
+    step: float = 1.0,
+) -> list[list[float]]:
+    """One-shot single octave of 2D Perlin noise over a regular grid — an image.
+
+    Builds a :class:`PerlinNoise2D` and samples it with
+    :func:`~noise_algorithms.sample_grid`.
+    """
+    return sample_grid(
+        PerlinNoise2D(seed=seed),
+        width=width,
+        height=height,
+        start_x=start_x,
+        start_y=start_y,
+        step=step,
+    )
 
 
 class FractalPerlinNoise2D(FractalNoiseGenerator):
@@ -92,3 +117,37 @@ def fractal_perlin_2d(
         persistence=persistence,
         frequency=frequency,
     ).noise(x, y)
+
+
+def fractal_perlin_grid(
+    *,
+    width: int,
+    height: int,
+    seed: int = 0,
+    octaves: int = 4,
+    lacunarity: float = 2.0,
+    persistence: float = 0.5,
+    frequency: float = 0.01,
+    start_x: float = 0.0,
+    start_y: float = 0.0,
+    step: float = 1.0,
+) -> list[list[float]]:
+    """One-shot fractal 2D Perlin noise over a regular grid — an image.
+
+    Builds a :class:`FractalPerlinNoise2D` and samples it with
+    :func:`~noise_algorithms.sample_grid`.
+    """
+    return sample_grid(
+        FractalPerlinNoise2D(
+            seed=seed,
+            octaves=octaves,
+            lacunarity=lacunarity,
+            persistence=persistence,
+            frequency=frequency,
+        ),
+        width=width,
+        height=height,
+        start_x=start_x,
+        start_y=start_y,
+        step=step,
+    )

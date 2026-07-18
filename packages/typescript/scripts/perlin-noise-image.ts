@@ -4,6 +4,7 @@ import {
   FractalPerlinNoise2D,
   FractalPerlinNoise3D,
 } from "../src/perlin-noise";
+import { sampleLine, sampleGrid, sampleVolume } from "../src/sampling";
 import fs from "fs";
 import path from "path";
 
@@ -55,10 +56,12 @@ export class PerlinNoiseImage {
 
     const png = new PNG({ width: opts.width!, height: opts.height! });
 
-    const noise = new FractalPerlinNoise1D(opts);
+    const line = sampleLine(new FractalPerlinNoise1D(opts), {
+      count: opts.width!,
+    });
 
     for (let x = 0; x < opts.width!; x++) {
-      const gray = PerlinNoiseImage.toGray(noise.noise(x));
+      const gray = PerlinNoiseImage.toGray(line[x]);
 
       for (let y = 0; y < opts.height!; y++) {
         PerlinNoiseImage.setPixel(png, x, y, gray);
@@ -78,7 +81,10 @@ export class PerlinNoiseImage {
 
     const png = new PNG({ width: opts.width!, height: opts.height! });
 
-    const noise = new FractalPerlinNoise2D(opts);
+    const grid = sampleGrid(new FractalPerlinNoise2D(opts), {
+      width: opts.width!,
+      height: opts.height!,
+    });
 
     for (let y = 0; y < opts.height!; y++) {
       for (let x = 0; x < opts.width!; x++) {
@@ -86,7 +92,7 @@ export class PerlinNoiseImage {
           png,
           x,
           y,
-          PerlinNoiseImage.toGray(noise.noise(x, y)),
+          PerlinNoiseImage.toGray(grid[y][x]),
         );
       }
     }
@@ -108,7 +114,13 @@ export class PerlinNoiseImage {
 
     const png = new PNG({ width: opts.width!, height: opts.height! });
 
-    const noise = new FractalPerlinNoise3D(opts);
+    // A single z-slice of the volume (depth 1 at z = zSlice).
+    const [slice] = sampleVolume(new FractalPerlinNoise3D(opts), {
+      width: opts.width!,
+      height: opts.height!,
+      depth: 1,
+      startZ: zSlice,
+    });
 
     for (let y = 0; y < opts.height!; y++) {
       for (let x = 0; x < opts.width!; x++) {
@@ -116,7 +128,7 @@ export class PerlinNoiseImage {
           png,
           x,
           y,
-          PerlinNoiseImage.toGray(noise.noise(x, y, zSlice)),
+          PerlinNoiseImage.toGray(slice[y][x]),
         );
       }
     }

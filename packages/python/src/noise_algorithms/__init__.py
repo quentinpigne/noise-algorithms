@@ -21,10 +21,17 @@ from .perlin import (
     fractal_perlin_1d,
     fractal_perlin_2d,
     fractal_perlin_3d,
+    fractal_perlin_grid,
+    fractal_perlin_line,
+    fractal_perlin_volume,
     perlin_1d,
     perlin_2d,
     perlin_3d,
+    perlin_grid,
+    perlin_line,
+    perlin_volume,
 )
+from .sampling import sample_grid, sample_line, sample_volume
 
 __all__ = [
     # Abstract concepts
@@ -45,6 +52,9 @@ __all__ = [
     "perlin_1d",
     "perlin_2d",
     "perlin_3d",
+    "perlin_line",
+    "perlin_grid",
+    "perlin_volume",
     # Perlin — fractal
     "FractalPerlinNoise1D",
     "FractalPerlinNoise2D",
@@ -52,5 +62,12 @@ __all__ = [
     "fractal_perlin_1d",
     "fractal_perlin_2d",
     "fractal_perlin_3d",
+    "fractal_perlin_line",
+    "fractal_perlin_grid",
+    "fractal_perlin_volume",
+    # Generic region sampling (curve / image / volume)
+    "sample_line",
+    "sample_grid",
+    "sample_volume",
 ]
 __version__ = "0.1.0"

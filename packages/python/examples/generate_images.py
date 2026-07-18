@@ -8,23 +8,21 @@ Requires the optional ``images`` dependencies::
 import matplotlib.pyplot as plt
 import numpy as np
 
-from noise_algorithms import FractalPerlinNoise2D
+from noise_algorithms import fractal_perlin_grid
 
 
 def main() -> None:
-    width, height = 512, 512
-    noise = FractalPerlinNoise2D(
-        seed=0,
-        frequency=1 / 64,
-        octaves=6,
-        lacunarity=2.5,
-        persistence=0.2,
+    image = np.array(
+        fractal_perlin_grid(
+            width=512,
+            height=512,
+            seed=0,
+            frequency=1 / 64,
+            octaves=6,
+            lacunarity=2.5,
+            persistence=0.2,
+        )
     )
-
-    image = np.zeros((height, width))
-    for y in range(height):
-        for x in range(width):
-            image[y, x] = noise.noise(x, y)
 
     plt.imshow(image, cmap="gray")
     plt.axis("off")
