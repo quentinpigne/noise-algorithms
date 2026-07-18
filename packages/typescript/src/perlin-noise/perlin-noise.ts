@@ -2,20 +2,13 @@ import { NoiseGenerator, NoiseGeneratorOptions } from "../noise-generator";
 import { lerp } from "../utils/interpolation";
 import { seededRandom } from "../utils/seeded-random";
 
-export interface PerlinOptions extends NoiseGeneratorOptions {
-  /** Base frequency multiplier applied to the coordinates. Defaults to `0.01`. */
-  scale?: number;
-  /** Number of noise layers summed together. Defaults to `4`. */
-  octaves?: number;
-  /** Frequency multiplier between successive octaves. Defaults to `2`. */
-  lacunarity?: number;
-  /** Amplitude multiplier between successive octaves. Defaults to `0.5`. */
-  persistence?: number;
-}
-
 /**
  * Abstract class for Perlin noise generators
  * @see https://en.wikipedia.org/wiki/Perlin_noise
+ *
+ * Produces a single octave of gradient noise. For multi-octave (fractal) noise,
+ * use `FractalPerlinNoise{1,2,3}D` or `fractalPerlin{1,2,3}D` from the same
+ * entry point.
  *
  * The base implements a dimension-agnostic engine: hashing folds the
  * permutation table over the coordinates, every corner of the surrounding
@@ -24,19 +17,10 @@ export interface PerlinOptions extends NoiseGeneratorOptions {
  * provide their dimension-specific gradient set via `gradient`.
  */
 export abstract class PerlinNoise extends NoiseGenerator {
-  protected scale: number;
-  protected octaves: number;
-  protected lacunarity: number;
-  protected persistence: number;
-
   protected permutation!: number[];
 
-  constructor(options: PerlinOptions = {}) {
+  constructor(options: NoiseGeneratorOptions = {}) {
     super(options);
-    this.scale = options.scale ?? 0.01;
-    this.octaves = options.octaves ?? 4;
-    this.lacunarity = options.lacunarity ?? 2;
-    this.persistence = options.persistence ?? 0.5;
     this.permutation = this.buildPermutation();
   }
 
@@ -64,31 +48,7 @@ export abstract class PerlinNoise extends NoiseGenerator {
   }
 
   /**
-   * Generate a multi-octave (fractal) noise value at the given coordinates.
-   * @param coords position, one entry per dimension
-   * @returns value in interval [-1, 1]
-   */
-  protected fractal(coords: number[]): number {
-    let value = 0;
-    let maxValue = 0;
-
-    let amplitude = 1;
-    let frequency = 1;
-
-    for (let i = 0; i < this.octaves; i++) {
-      const scaled = coords.map((c) => c * frequency * this.scale);
-      value += this.octave(scaled) * amplitude;
-      maxValue += amplitude;
-      amplitude *= this.persistence;
-      frequency *= this.lacunarity;
-    }
-
-    return value / maxValue;
-  }
-
-  /**
-   * Single octave of N-dimensional Perlin noise at the given (already scaled)
-   * coordinates.
+   * Single octave of N-dimensional Perlin noise at the given coordinates.
    * @param coords position, one entry per dimension
    * @returns noise value in interval [-1, 1]
    */

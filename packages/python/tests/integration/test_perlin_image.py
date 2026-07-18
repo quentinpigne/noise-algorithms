@@ -37,7 +37,9 @@ pytestmark = pytest.mark.integration
 
 _PREAMBLE = f"""
 import sys
-from noise_algorithms import PerlinNoise1D, PerlinNoise2D, PerlinNoise3D
+from noise_algorithms import (
+    FractalPerlinNoise1D, FractalPerlinNoise2D, FractalPerlinNoise3D,
+)
 
 SEED, SCALE = {SEED}, {SCALE}
 W, H = {{width}}, {{height}}
@@ -50,7 +52,7 @@ def gray(value):
 
 _BODIES = {
     "1d": """
-perlin = PerlinNoise1D(seed=SEED, scale=SCALE)
+perlin = FractalPerlinNoise1D(seed=SEED, frequency=SCALE)
 mid = H // 2
 for x in range(W):
     buf[mid * W + x] = 210
@@ -63,7 +65,7 @@ for x in range(W):
     prev = y
 """,
     "2d": """
-perlin = PerlinNoise2D(seed=SEED, scale=SCALE)
+perlin = FractalPerlinNoise2D(seed=SEED, frequency=SCALE)
 for y in range(H):
     for x in range(W):
         buf[y * W + x] = gray(perlin.noise(x, y))
@@ -83,7 +85,7 @@ def at(i, j, k):
     return (i * N + j) * N + k
 
 
-perlin = PerlinNoise3D(seed=SEED, scale=SCALE)
+perlin = FractalPerlinNoise3D(seed=SEED, frequency=SCALE)
 vals = [0.0] * (N * N * N)
 for i in range(N):
     for j in range(N):

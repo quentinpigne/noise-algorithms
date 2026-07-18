@@ -1,5 +1,6 @@
 import { UNIT } from "../utils/constants";
 import { NoiseGenerator3D } from "../interfaces/noise-generator-3d";
+import { NoiseGeneratorOptions } from "../noise-generator";
 
 import { PerlinNoise } from "./perlin-noise";
 
@@ -31,13 +32,30 @@ export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
   }
 
   /**
-   * Generate a multi-octave noise value at a given position
+   * Generate a single-octave noise value at a given position
    * @param x position on the x-axis
    * @param y position on the y-axis
    * @param z position on the z-axis
    * @returns value in interval [-1, 1]
    */
   noise(x: number, y: number, z: number): number {
-    return this.fractal([x, y, z]);
+    return this.octave([x, y, z]);
   }
+}
+
+/**
+ * One-shot single-octave 3D Perlin noise at a given position.
+ * Builds a {@link PerlinNoise3D} per call; reuse an instance for loops.
+ * @param x position on the x-axis
+ * @param y position on the y-axis
+ * @param z position on the z-axis
+ * @returns value in interval [-1, 1]
+ */
+export function perlin3D(
+  x: number,
+  y: number,
+  z: number,
+  options: NoiseGeneratorOptions = {},
+): number {
+  return new PerlinNoise3D(options).noise(x, y, z);
 }

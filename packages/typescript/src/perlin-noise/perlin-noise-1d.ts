@@ -1,4 +1,5 @@
 import { NoiseGenerator1D } from "../interfaces/noise-generator-1d";
+import { NoiseGeneratorOptions } from "../noise-generator";
 
 import { PerlinNoise } from "./perlin-noise";
 
@@ -14,11 +15,24 @@ export class PerlinNoise1D extends PerlinNoise implements NoiseGenerator1D {
   }
 
   /**
-   * Generate a multi-octave noise value at a given position
+   * Generate a single-octave noise value at a given position
    * @param x position on the x-axis
    * @returns value in interval [-1, 1]
    */
   noise(x: number): number {
-    return this.fractal([x]);
+    return this.octave([x]);
   }
+}
+
+/**
+ * One-shot single-octave 1D Perlin noise at a given position.
+ * Builds a {@link PerlinNoise1D} per call; reuse an instance for loops.
+ * @param x position on the x-axis
+ * @returns value in interval [-1, 1]
+ */
+export function perlin1D(
+  x: number,
+  options: NoiseGeneratorOptions = {},
+): number {
+  return new PerlinNoise1D(options).noise(x);
 }

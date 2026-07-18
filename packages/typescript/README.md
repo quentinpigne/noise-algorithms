@@ -6,7 +6,7 @@ ESM library with type definitions. Part of the
 
 ## Preview
 
-Perlin noise rendered from the built library (`seed=42`, `scale=0.03`) — these
+Perlin noise rendered from the built library (`seed=42`, `frequency=0.03`) — these
 are the snapshots the integration tests verify:
 
 |              1D (signal graph)               |                  2D (field)                  |            3D (Swiss cheese cube)            |
@@ -30,23 +30,40 @@ add a scoped registry to your `.npmrc`:
 
 ## Usage
 
-The Perlin generators live under the `/perlin-noise` entry point. Each class
-exposes a `noise(...)` method returning fractal (multi-octave) noise in the
-`[-1, 1]` interval.
+Every generator exposes a `noise(...)` method returning a value in the `[-1, 1]`
+interval. Each algorithm lives under `/perlin-noise` and offers four entry
+points per dimension — a **class** (reuse it for repeated sampling) and a
+one-shot **function** (builds a generator per call), in **single-octave** and
+**fractal** flavours:
+
+|               | Class                  | Function                          |
+| ------------- | ---------------------- | --------------------------------- |
+| Single octave | `PerlinNoise2D`        | `perlin2D(x, y, options?)`        |
+| Fractal (fBm) | `FractalPerlinNoise2D` | `fractalPerlin2D(x, y, options?)` |
 
 ```ts
 import {
-  PerlinNoise1D,
   PerlinNoise2D,
-  PerlinNoise3D,
+  perlin2D,
+  FractalPerlinNoise2D,
+  fractalPerlin2D,
 } from "@quentinpigne/noise-algorithms/perlin-noise";
 
-const perlin = new PerlinNoise2D({ seed: 42 });
-const value = perlin.noise(12, 7); // [-1, 1]
+// Single octave
+new PerlinNoise2D({ seed: 42 }).noise(12, 7);
+perlin2D(12, 7, { seed: 42 });
 
-new PerlinNoise1D({ seed: 42 }).noise(3);
-new PerlinNoise3D({ seed: 42 }).noise(3, 4, 5);
+// Fractal (multi-octave)
+new FractalPerlinNoise2D({ seed: 42, octaves: 6 }).noise(12, 7);
+fractalPerlin2D(12, 7, { seed: 42, octaves: 6 });
 ```
+
+Fractal layering (fBm) is a **technique** for stacking octaves, not a noise
+algorithm in itself. The shared octave-stacking engine lives in the abstract
+`FractalNoiseGenerator` base (and the `FractalNoiseGenerator{1,2,3}D`
+interfaces); `FractalPerlinNoise2D` is the Perlin implementation. The base is
+exported as an abstraction — there is no concrete generic wrapper to instantiate
+with an arbitrary source.
 
 The package root re-exports the shared abstractions and interfaces:
 
@@ -59,21 +76,29 @@ import {
 } from "@quentinpigne/noise-algorithms";
 ```
 
-### Constructor parameters
+### Parameters
 
-Generators take a single options object; every field is optional.
+A Perlin generator takes only a `seed` (optional; defaults to a random seed).
 
 ```ts
-new PerlinNoise2D({ seed?, scale?, octaves?, lacunarity?, persistence? });
+new PerlinNoise2D({ seed? });
 ```
 
-| Parameter     | Default | Description                                             |
-| ------------- | ------- | ------------------------------------------------------- |
-| `seed`        | random  | Seed for the permutation table; same seed → same field. |
-| `scale`       | `0.01`  | Base frequency multiplier applied to the coordinates.   |
-| `octaves`     | `4`     | Number of noise layers summed together.                 |
-| `lacunarity`  | `2`     | Frequency multiplier between successive octaves.        |
-| `persistence` | `0.5`   | Amplitude multiplier between successive octaves.        |
+A fractal generator takes the layering options (all optional):
+
+```ts
+new FractalPerlinNoise2D({ seed?, octaves?, lacunarity?, persistence?, frequency? });
+```
+
+| Parameter     | Default | Description                                      |
+| ------------- | ------- | ------------------------------------------------ |
+| `octaves`     | `4`     | Number of noise layers summed together.          |
+| `lacunarity`  | `2`     | Frequency multiplier between successive octaves. |
+| `persistence` | `0.5`   | Amplitude multiplier between successive octaves. |
+| `frequency`   | `0.01`  | Base frequency applied to the first octave.      |
+
+The `FractalPerlinNoise{1,2,3}D` classes and `fractalPerlin{1,2,3}D` functions
+accept `seed` plus all of the above.
 
 ## Development
 

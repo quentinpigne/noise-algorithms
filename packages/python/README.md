@@ -6,7 +6,7 @@ monorepo.
 
 ## Preview
 
-Perlin noise rendered from the built wheel (`seed=42`, `scale=0.03`) — these are
+Perlin noise rendered from the built wheel (`seed=42`, `frequency=0.03`) — these are
 the snapshots the integration tests verify:
 
 | 1D (signal graph) | 2D (field) | 3D (Swiss cheese cube) |
@@ -23,47 +23,57 @@ Requires Python 3.10 or newer; no runtime dependencies.
 
 ## Usage
 
-Two equivalent APIs are provided. Every generator returns fractal (multi-octave)
-noise in the `[-1, 1]` interval.
+Every generator returns noise in the `[-1, 1]` interval. Each algorithm offers
+four entry points per dimension — a **class** (reuse it for repeated sampling)
+and a one-shot **function** (builds a generator per call), in **single-octave**
+and **fractal** flavours:
 
-### Classes (recommended for repeated sampling)
+| | Class | Function |
+| --- | --- | --- |
+| Single octave | `PerlinNoise2D` | `perlin_2d(x, y, *, seed=0)` |
+| Fractal (fBm) | `FractalPerlinNoise2D` | `fractal_perlin_2d(x, y, *, seed=0, ...)` |
 
-A class builds its permutation table once and reuses it across calls — use it
+```python
+from noise_algorithms import (
+    PerlinNoise2D,
+    perlin_2d,
+    FractalPerlinNoise2D,
+    fractal_perlin_2d,
+)
+
+# Single octave
+PerlinNoise2D(seed=42).noise(12, 7)
+perlin_2d(12, 7, seed=42)
+
+# Fractal (multi-octave)
+FractalPerlinNoise2D(seed=42, octaves=6).noise(12, 7)
+fractal_perlin_2d(12, 7, seed=42, octaves=6)
+```
+
+A class builds its permutation table once, so reuse an instance across calls
 when generating many values (e.g. an image).
 
-```python
-from noise_algorithms import PerlinNoise1D, PerlinNoise2D, PerlinNoise3D
-
-perlin = PerlinNoise2D(seed=42, scale=0.05, octaves=6)
-for y in range(height):
-    for x in range(width):
-        value = perlin.noise(x, y)
-
-PerlinNoise1D(seed=42).noise(3.0)
-PerlinNoise3D(seed=42).noise(3.0, 4.0, 5.0)
-```
-
-### Functions (one-shot convenience)
-
-The `perlin_*` functions wrap the classes for a single value. They build a
-generator per call, so prefer a class instance for loops.
-
-```python
-from noise_algorithms import perlin_1d, perlin_2d, perlin_3d
-
-perlin_2d(12.0, 7.0)                       # defaults
-perlin_2d(12.0, 7.0, seed=42, scale=0.05)  # custom parameters
-```
+Fractal layering (fBm) is a **technique** for stacking octaves, not a noise
+algorithm in itself. The shared octave-stacking engine lives in the abstract
+`FractalNoiseGenerator` base (and the `FractalNoiseGenerator{1,2,3}D`
+protocols); `FractalPerlinNoise2D` is the Perlin implementation. The base is
+exported as an abstraction — there is no concrete generic wrapper to instantiate
+with an arbitrary source.
 
 ### Parameters
 
+A Perlin generator takes only `seed` (default `0`). A fractal generator takes
+the layering options:
+
 | Parameter | Default | Description |
 | --- | --- | --- |
-| `seed` | `0` | Seed for the permutation table; same seed → same field. |
-| `scale` | `0.01` | Base frequency multiplier applied to the coordinates. |
 | `octaves` | `4` | Number of noise layers summed together. |
 | `lacunarity` | `2.0` | Frequency multiplier between successive octaves. |
 | `persistence` | `0.5` | Amplitude multiplier between successive octaves. |
+| `frequency` | `0.01` | Base frequency applied to the first octave. |
+
+The `FractalPerlinNoise{1,2,3}D` classes and `fractal_perlin_{1,2,3}d` functions
+accept `seed` plus all of the above.
 
 The `noise_algorithms.NoiseGenerator{1,2,3}D` protocols describe the `noise`
 contract if you want to type against it.

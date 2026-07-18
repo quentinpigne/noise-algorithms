@@ -2,21 +2,22 @@
 
 See https://en.wikipedia.org/wiki/Perlin_noise
 
-Two equivalent APIs are provided:
+For each dimension, four public entry points are provided:
 
-- Classes :class:`PerlinNoise1D`, :class:`PerlinNoise2D`, :class:`PerlinNoise3D`
-  build their permutation table once and are the right choice for repeated
-  sampling (e.g. rendering an image).
-- Functions :func:`perlin_1d`, :func:`perlin_2d`, :func:`perlin_3d` are one-shot
-  convenience wrappers around those classes.
+- ``PerlinNoise{1,2,3}D`` — single-octave class (reuse for repeated sampling).
+- ``perlin_{1,2,3}d`` — single-octave one-shot function.
+- ``FractalPerlinNoise{1,2,3}D`` — fractal (multi-octave) class, stacking
+  octaves of a Perlin source (extends
+  :class:`~noise_algorithms.FractalNoiseGenerator`).
+- ``fractal_perlin_{1,2,3}d`` — fractal one-shot function.
 
-Every generator returns fractal (multi-octave) noise in the ``[-1, 1]`` interval.
+Every generator returns noise in the ``[-1, 1]`` interval.
 """
 
 from ._base import PerlinNoise
-from .perlin_1d import PerlinNoise1D, perlin_1d
-from .perlin_2d import PerlinNoise2D, perlin_2d
-from .perlin_3d import PerlinNoise3D, perlin_3d
+from .perlin_1d import FractalPerlinNoise1D, PerlinNoise1D, fractal_perlin_1d, perlin_1d
+from .perlin_2d import FractalPerlinNoise2D, PerlinNoise2D, fractal_perlin_2d, perlin_2d
+from .perlin_3d import FractalPerlinNoise3D, PerlinNoise3D, fractal_perlin_3d, perlin_3d
 
 __all__ = [
     "PerlinNoise",
@@ -26,4 +27,10 @@ __all__ = [
     "perlin_1d",
     "perlin_2d",
     "perlin_3d",
+    "FractalPerlinNoise1D",
+    "FractalPerlinNoise2D",
+    "FractalPerlinNoise3D",
+    "fractal_perlin_1d",
+    "fractal_perlin_2d",
+    "fractal_perlin_3d",
 ]

@@ -1,3 +1,7 @@
+/**
+ * Small deterministic LCG PRNG seeding the Perlin permutation shuffle.
+ * Returns a generator function yielding successive values in `[0, 1)`.
+ */
 export function seededRandom(seed: number): () => number {
   return function () {
     seed = (seed * 9301 + 49297) % 233280;

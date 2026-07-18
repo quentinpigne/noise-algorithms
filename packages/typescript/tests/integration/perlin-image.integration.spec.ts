@@ -6,9 +6,9 @@ import path from "node:path";
 // Import the BUILT library from dist/ — the exact artifact published to the
 // registries, not the TypeScript sources.
 import {
-  PerlinNoise1D,
-  PerlinNoise2D,
-  PerlinNoise3D,
+  FractalPerlinNoise1D,
+  FractalPerlinNoise2D,
+  FractalPerlinNoise3D,
 } from "../../dist/perlin-noise/index.mjs";
 
 const SEED = 42;
@@ -33,7 +33,7 @@ function setPixel(png: PNG, x: number, y: number, gray: number): void {
 
 /** 1D noise drawn as a line graph: x = position, y = noise value. */
 function render1DGraph(width: number, height: number): Buffer {
-  const perlin = new PerlinNoise1D({ seed: SEED, scale: SCALE });
+  const perlin = new FractalPerlinNoise1D({ seed: SEED, frequency: SCALE });
   const png = new PNG({ width, height });
   png.data.fill(255); // white background
 
@@ -58,7 +58,7 @@ function render1DGraph(width: number, height: number): Buffer {
 
 /** 2D noise rendered as a grayscale field. */
 function render2DField(size: number): Buffer {
-  const perlin = new PerlinNoise2D({ seed: SEED, scale: SCALE });
+  const perlin = new FractalPerlinNoise2D({ seed: SEED, frequency: SCALE });
   const png = new PNG({ width: size, height: size });
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
@@ -106,7 +106,7 @@ function render3DCube(size: number): Buffer {
   const OY = size / 2;
   const SHADE = { top: 215, right: 120, left: 165 };
 
-  const perlin = new PerlinNoise3D({ seed: SEED, scale: SCALE });
+  const perlin = new FractalPerlinNoise3D({ seed: SEED, frequency: SCALE });
   const values = new Float64Array(N * N * N);
   const at = (i: number, j: number, k: number) => (i * N + j) * N + k;
   for (let i = 0; i < N; i++)

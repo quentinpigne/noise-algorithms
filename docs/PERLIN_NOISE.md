@@ -277,19 +277,25 @@ octaves of noise at increasing frequency and decreasing amplitude — *fractiona
 Brownian motion* (fBm):
 
 ```
-value = Σ  octave(point · frequencyᵢ · scale) · amplitudeᵢ
+value = Σ  octave(point · frequencyᵢ) · amplitudeᵢ
         i
 
-frequency starts at 1 and is multiplied by lacunarity  each octave
-amplitude starts at 1 and is multiplied by persistence each octave
+frequency starts at `frequency` and is multiplied by lacunarity  each octave
+amplitude starts at 1           and is multiplied by persistence each octave
 ```
 
 The sum is divided by the total amplitude to keep the result in `[-1, 1]`.
 
+Fractal layering is independent of the underlying noise function, so in this
+library it is a **separate abstract concept** — the octave loop lives once in the
+abstract `FractalNoiseGenerator`, reused by every algorithm's fractal variant,
+rather than baked into Perlin (see §9). The `seed` below belongs to the noise
+source; the rest are the fractal layer's parameters.
+
 | Parameter | Meaning |
 | --- | --- |
-| `seed` | Chooses the permutation table (the field). |
-| `scale` | Base frequency multiplier on the input coordinates (zoom). |
+| `seed` | Chooses the permutation table (the field) of the noise source. |
+| `frequency` | Base frequency applied to the input coordinates of the first octave (zoom). |
 | `octaves` | How many layers are summed. |
 | `lacunarity` | Frequency multiplier between octaves (usually `2`). |
 | `persistence` | Amplitude multiplier between octaves (usually `0.5`). |
@@ -305,13 +311,22 @@ same design.
 
 ### 9.1 File map (Python)
 
+Two abstract concepts anchor the design: **`NoiseGenerator`** (generate noise)
+and **`FractalNoiseGenerator`** (combine octaves of noise), each declined into
+three dimension interfaces. Perlin is the one implementation so far, in a
+single-octave and a fractal flavour.
+
 | Concept (above) | File / symbol |
 | --- | --- |
 | Permutation table (§3.1) | `_permutation.py` → `build_permutation(seed)` |
 | Fade & lerp (§3.2–3.3) | `_interpolation.py` → `fade`, `lerp` |
-| Engine: octave + fractal (§4–§8) | `perlin/_base.py` → `PerlinNoise` |
-| Gradient strategy (§4–§6) | `perlin/perlin_1d.py`, `perlin_2d.py`, `perlin_3d.py` → `_gradient` |
-| Typing contract | `interfaces.py` → `NoiseGenerator{1,2,3}D` protocols |
+| Abstract concept: generate noise | `noise_generator.py` → `NoiseGenerator` |
+| Abstract concept: combine into fractal noise (§8) | `fractal_noise_generator.py` → `FractalNoiseGenerator` |
+| Dimension interfaces | `interfaces.py` → `NoiseGenerator{1,2,3}D`, `FractalNoiseGenerator{1,2,3}D` protocols |
+| Single-octave engine (§4–§7) | `perlin/_base.py` → `PerlinNoise(NoiseGenerator)` |
+| Gradient strategy (§4–§6) | `perlin/perlin_{1,2,3}d.py` → `_gradient` |
+| Perlin single octave | `perlin/perlin_{1,2,3}d.py` → `PerlinNoise{1,2,3}D`, `perlin_{1,2,3}d` |
+| Perlin fractal | `perlin/perlin_{1,2,3}d.py` → `FractalPerlinNoise{1,2,3}D(FractalNoiseGenerator)`, `fractal_perlin_{1,2,3}d` |
 
 ### 9.2 The dimension-agnostic octave
 
@@ -345,8 +360,9 @@ def _octave(self, *coords: float) -> float:
     return values[0]
 ```
 
-The fractal loop (`PerlinNoise._fractal`) wraps it with the octave summation of
-§8, and is what the public `noise(...)` methods call.
+The public `noise(...)` of a Perlin generator returns exactly this single
+octave. The octave summation of §8 lives separately in
+`FractalNoiseGenerator._fractal` (§9.4).
 
 ### 9.3 The per-dimension gradient
 
@@ -356,7 +372,7 @@ example, 2D:
 ```python
 class PerlinNoise2D(PerlinNoise):
     def noise(self, x: float, y: float) -> float:
-        return self._fractal(x, y)
+        return self._octave(x, y)
 
     def _gradient(self, h: int, displacement: list[float]) -> float:
         gx, gy = _GRADIENTS[h & 7]          # 8 directions, picked by the hash
@@ -366,31 +382,57 @@ class PerlinNoise2D(PerlinNoise):
 1D returns `±displacement[0]` (sign from `h & 1`); 3D dots a 12-vector table
 chosen with `h % 12`.
 
-### 9.4 Two APIs
+### 9.4 Fractal layering is a second abstract concept
 
-Each dimension is exposed both as a **class** (builds the permutation table once
-— use it for repeated sampling, e.g. rendering an image) and as a **one-shot
-function** wrapper:
+Because fBm is independent of the noise function, the octave summation of §8 is
+implemented once in the abstract `FractalNoiseGenerator`
+(`fractal_noise_generator.py`), which any source satisfying
+`NoiseGenerator{1,2,3}D` can feed. This is a **layering technique, not a noise
+algorithm** — the base is abstract (you cannot instantiate a generic combiner),
+so future algorithms (Simplex, Worley, …) reuse the exact same machinery while
+"fractal" only ever appears in the public API as a qualifier on a real algorithm.
+
+Each algorithm exposes **four public entry points per dimension** — a class and
+a one-shot function, in single-octave and fractal flavours:
+
+| | Class | Function |
+| --- | --- | --- |
+| Single octave | `PerlinNoise2D` | `perlin_2d(x, y, *, seed=0)` |
+| Fractal (fBm) | `FractalPerlinNoise2D` | `fractal_perlin_2d(x, y, *, seed=0, …)` |
 
 ```python
-from noise_algorithms import PerlinNoise2D, perlin_2d
+from noise_algorithms import FractalPerlinNoise2D
 
-perlin = PerlinNoise2D(seed=42, scale=0.05)
-perlin.noise(12, 7)
-
-perlin_2d(12, 7, seed=42, scale=0.05)   # convenience, builds a generator per call
+FractalPerlinNoise2D(seed=42, frequency=0.05, octaves=6).noise(12, 7)
 ```
+
+`FractalPerlinNoise2D` extends `FractalNoiseGenerator` (binding a `PerlinNoise2D`
+source), and its `noise` calls `self._fractal(x, y)` — the §8 loop that samples the wrapped
+`PerlinNoise2D` source at each octave.
 
 ### 9.5 TypeScript parity
 
-The TypeScript package (`packages/typescript`) uses the same architecture: an
-abstract `PerlinNoise` base with the generic engine (`octave(coords)` and
-`fractal(coords)`), and `PerlinNoise1D/2D/3D` subclasses supplying
-`gradient(hash, displacement)`. The differences are idiomatic, not structural:
-TS takes a single options object (`new PerlinNoise2D({ seed, scale, … })`) while
-Python uses keyword-only arguments (`PerlinNoise2D(seed=…, scale=…)`). Both make
-every parameter optional and named, so new parameters can be added without
-breaking existing call sites.
+The TypeScript package (`packages/typescript`) uses the same architecture and
+the same two abstract concepts: `NoiseGenerator` (`src/noise-generator.ts`) and
+`FractalNoiseGenerator` (`src/fractal-noise-generator.ts`), each with three
+dimension interfaces under `src/interfaces/`. `PerlinNoise1D/2D/3D` implement the
+single-octave side; `FractalPerlinNoise1D/2D/3D` extend `FractalNoiseGenerator`
+for the fractal side.
+
+The **public API is homogeneous across both packages** — the same four entry
+points per dimension, differing only by each language's casing convention:
+
+| Entry point | TypeScript | Python |
+| --- | --- | --- |
+| Single-octave class | `PerlinNoise2D` | `PerlinNoise2D` |
+| Single-octave function | `perlin2D(x, y, options?)` | `perlin_2d(x, y, *, seed=0)` |
+| Fractal class | `FractalPerlinNoise2D` | `FractalPerlinNoise2D` |
+| Fractal function | `fractalPerlin2D(x, y, options?)` | `fractal_perlin_2d(x, y, …)` |
+
+The remaining differences are idiomatic: TS takes a single options object
+(`new FractalPerlinNoise2D({ octaves, frequency, … })`) while Python uses
+keyword-only arguments. Every parameter is optional and named, so new ones can
+be added without breaking existing call sites.
 
 > **Cross-language note.** The two packages use different (language-native)
 > pseudo-random generators to build the permutation table, so **the same seed

@@ -1,5 +1,6 @@
 import { UNIT } from "../utils/constants";
 import { NoiseGenerator2D } from "../interfaces/noise-generator-2d";
+import { NoiseGeneratorOptions } from "../noise-generator";
 
 import { PerlinNoise } from "./perlin-noise";
 
@@ -26,12 +27,27 @@ export class PerlinNoise2D extends PerlinNoise implements NoiseGenerator2D {
   }
 
   /**
-   * Generate a multi-octave noise value at a given position
+   * Generate a single-octave noise value at a given position
    * @param x position on the x-axis
    * @param y position on the y-axis
    * @returns value in interval [-1, 1]
    */
   noise(x: number, y: number): number {
-    return this.fractal([x, y]);
+    return this.octave([x, y]);
   }
+}
+
+/**
+ * One-shot single-octave 2D Perlin noise at a given position.
+ * Builds a {@link PerlinNoise2D} per call; reuse an instance for loops.
+ * @param x position on the x-axis
+ * @param y position on the y-axis
+ * @returns value in interval [-1, 1]
+ */
+export function perlin2D(
+  x: number,
+  y: number,
+  options: NoiseGeneratorOptions = {},
+): number {
+  return new PerlinNoise2D(options).noise(x, y);
 }

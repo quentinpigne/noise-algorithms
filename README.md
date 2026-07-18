@@ -37,10 +37,9 @@ npm install @quentinpigne/noise-algorithms
 ```
 
 ```ts
-import { PerlinNoise2D } from "@quentinpigne/noise-algorithms/perlin-noise";
+import { fractalPerlin2D } from "@quentinpigne/noise-algorithms/perlin-noise";
 
-const perlin = new PerlinNoise2D({ seed: 42 });
-console.log(perlin.noise(12, 7)); // value in [-1, 1]
+console.log(fractalPerlin2D(12, 7, { seed: 42 })); // fractal value in [-1, 1]
 ```
 
 **Python**
@@ -50,9 +49,9 @@ pip install noise-algorithms
 ```
 
 ```python
-from noise_algorithms import PerlinNoise2D
+from noise_algorithms import fractal_perlin_2d
 
-print(PerlinNoise2D(seed=42).noise(12, 7))  # value in [-1, 1]
+print(fractal_perlin_2d(12, 7, seed=42))  # fractal value in [-1, 1]
 ```
 
 See each package's README for the full API and configuration options.

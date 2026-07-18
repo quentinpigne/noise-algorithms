@@ -1,7 +1,9 @@
 import { PNG } from "pngjs";
-import { PerlinNoise1D } from "../src/perlin-noise/perlin-noise-1d";
-import { PerlinNoise2D } from "../src/perlin-noise/perlin-noise-2d";
-import { PerlinNoise3D } from "../src/perlin-noise/perlin-noise-3d";
+import {
+  FractalPerlinNoise1D,
+  FractalPerlinNoise2D,
+  FractalPerlinNoise3D,
+} from "../src/perlin-noise";
 import fs from "fs";
 import path from "path";
 
@@ -9,7 +11,7 @@ export interface PerlinNoiseImageOptions {
   width?: number;
   height?: number;
   seed?: number;
-  scale?: number;
+  frequency?: number;
   octaves?: number;
   lacunarity?: number;
   persistence?: number;
@@ -21,7 +23,7 @@ export class PerlinNoiseImage {
     width: 512,
     height: 512,
     seed: 42,
-    scale: 0.01,
+    frequency: 0.01,
     octaves: 4,
     lacunarity: 2,
     persistence: 0.5,
@@ -53,7 +55,7 @@ export class PerlinNoiseImage {
 
     const png = new PNG({ width: opts.width!, height: opts.height! });
 
-    const noise = new PerlinNoise1D(opts);
+    const noise = new FractalPerlinNoise1D(opts);
 
     for (let x = 0; x < opts.width!; x++) {
       const gray = PerlinNoiseImage.toGray(noise.noise(x));
@@ -76,7 +78,7 @@ export class PerlinNoiseImage {
 
     const png = new PNG({ width: opts.width!, height: opts.height! });
 
-    const noise = new PerlinNoise2D(opts);
+    const noise = new FractalPerlinNoise2D(opts);
 
     for (let y = 0; y < opts.height!; y++) {
       for (let x = 0; x < opts.width!; x++) {
@@ -106,7 +108,7 @@ export class PerlinNoiseImage {
 
     const png = new PNG({ width: opts.width!, height: opts.height! });
 
-    const noise = new PerlinNoise3D(opts);
+    const noise = new FractalPerlinNoise3D(opts);
 
     for (let y = 0; y < opts.height!; y++) {
       for (let x = 0; x < opts.width!; x++) {
