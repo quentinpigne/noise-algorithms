@@ -1,12 +1,14 @@
 """Seeded permutation table used to hash grid coordinates.
 
-The table is built with the standard library's :class:`random.Random`
-(a deterministic, version-stable Mersenne Twister) so the package keeps a
-pure-Python, dependency-free runtime. Each noise generator builds its table once
-in its constructor and holds it for its lifetime.
+The table is built with a Fisher-Yates shuffle driven by the portable
+:func:`~noise_algorithms._seeded_random.xorshift32` PRNG. That PRNG and the
+integer-modulo index are shared with the TypeScript package, so the same seed
+yields the same table — and therefore the same field — in every language. Each
+noise generator builds its table once in its constructor and holds it for its
+lifetime.
 """
 
-import random
+from ._seeded_random import xorshift32
 
 
 def build_permutation(seed: int) -> tuple[int, ...]:
@@ -16,5 +18,8 @@ def build_permutation(seed: int) -> tuple[int, ...]:
     duplicated so that ``table[i] + offset`` never overflows the table bounds.
     """
     values = list(range(256))
-    random.Random(seed).shuffle(values)
+    rng = xorshift32(seed)
+    for i in range(255, 0, -1):
+        j = rng() % (i + 1)
+        values[i], values[j] = values[j], values[i]
     return tuple(values + values)

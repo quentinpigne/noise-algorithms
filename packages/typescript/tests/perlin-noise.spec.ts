@@ -73,18 +73,27 @@ describe("Perlin noise generator (single octave)", () => {
 });
 
 describe("Fractal Perlin noise", () => {
+  // Cross-language conformance vectors: these exact values are also asserted in
+  // the Python suite (test_perlin.py). The same seed must produce the same field
+  // in every package — keep the two lists identical.
   it("should generate fractal 1D Perlin noise", () => {
-    expect(fractalPerlin1D(0.5, { seed: 42 })).toBeCloseTo(0.010613, 6);
+    expect(fractalPerlin1D(0.5, { seed: 42 })).toBeCloseTo(
+      -0.010716767090833334,
+      12,
+    );
   });
 
   it("should generate fractal 2D Perlin noise", () => {
-    expect(fractalPerlin2D(0.5, 0.5, { seed: 42 })).toBeCloseTo(-0.01513, 6);
+    expect(fractalPerlin2D(0.5, 0.5, { seed: 42 })).toBeCloseTo(
+      1.653283292556325e-5,
+      12,
+    );
   });
 
   it("should generate fractal 3D Perlin noise", () => {
     expect(fractalPerlin3D(0.5, 0.5, 0.5, { seed: 42 })).toBeCloseTo(
-      -0.014968,
-      6,
+      0.015079820337889127,
+      12,
     );
   });
 

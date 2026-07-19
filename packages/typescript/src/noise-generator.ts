@@ -1,7 +1,5 @@
-import { MAX_INT } from "./utils/constants";
-
 export interface NoiseGeneratorOptions {
-  /** Seed for the noise field; the same seed yields the same field. Defaults to a random seed. */
+  /** Seed for the noise field; the same seed yields the same field. Defaults to `0`. */
   seed?: number;
 }
 
@@ -16,6 +14,6 @@ export abstract class NoiseGenerator {
   protected seed: number;
 
   constructor(options: NoiseGeneratorOptions = {}) {
-    this.seed = options.seed ?? (Math.random() * MAX_INT) | 0;
+    this.seed = options.seed ?? 0;
   }
 }

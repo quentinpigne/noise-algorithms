@@ -1,6 +1,6 @@
 import { NoiseGenerator, NoiseGeneratorOptions } from "../noise-generator";
 import { lerp } from "../utils/interpolation";
-import { seededRandom } from "../utils/seeded-random";
+import { xorshift32 } from "../utils/seeded-random";
 
 /**
  * Abstract class for Perlin noise generators
@@ -31,10 +31,12 @@ export abstract class PerlinNoise extends NoiseGenerator {
       p[i] = i;
     }
 
-    // Seed-based mix
-    const random = seededRandom(this.seed);
+    // Seed-based Fisher-Yates shuffle. The PRNG and the integer-modulo index
+    // are shared with the Python package, so the same seed yields the same
+    // table (and therefore the same field) in every language.
+    const random = xorshift32(this.seed);
     for (let i = 255; i > 0; i--) {
-      const j = Math.floor(random() * (i + 1));
+      const j = random() % (i + 1);
       [p[i], p[j]] = [p[j], p[i]];
     }
 

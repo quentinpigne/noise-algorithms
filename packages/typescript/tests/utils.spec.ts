@@ -1,5 +1,4 @@
 import { smoothstep, lerp, coserp, cuberp } from "../src/utils/interpolation";
-import { seededRandom, LCGSeededRandom } from "../src/utils/seeded-random";
 
 describe("interpolation", () => {
   describe("lerp", () => {
@@ -60,44 +59,6 @@ describe("interpolation", () => {
 
     it("is linear for evenly spaced collinear points", () => {
       expect(cuberp(0, 1, 2, 3, 0.5)).toBeCloseTo(1.5, 10);
-    });
-  });
-});
-
-describe("seeded random", () => {
-  describe("seededRandom", () => {
-    it("is deterministic for a given seed", () => {
-      const a = seededRandom(42);
-      const b = seededRandom(42);
-      const seqA = [a(), a(), a()];
-      const seqB = [b(), b(), b()];
-      expect(seqA).toEqual(seqB);
-    });
-
-    it("produces values within [0, 1)", () => {
-      const rng = seededRandom(123);
-      for (let i = 0; i < 1000; i++) {
-        const value = rng();
-        expect(value).toBeGreaterThanOrEqual(0);
-        expect(value).toBeLessThan(1);
-      }
-    });
-  });
-
-  describe("LCGSeededRandom", () => {
-    it("is deterministic for a given seed", () => {
-      const a = LCGSeededRandom(7);
-      const b = LCGSeededRandom(7);
-      expect([a(), a(), a()]).toEqual([b(), b(), b()]);
-    });
-
-    it("produces values within (0, 1) even for seed 0", () => {
-      const rng = LCGSeededRandom(0);
-      for (let i = 0; i < 1000; i++) {
-        const value = rng();
-        expect(value).toBeGreaterThan(0);
-        expect(value).toBeLessThan(1);
-      }
     });
   });
 });

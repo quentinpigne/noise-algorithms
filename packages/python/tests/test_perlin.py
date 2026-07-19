@@ -25,11 +25,12 @@ from noise_algorithms import (
     perlin_3d,
 )
 
-# Reference values for fractal noise with the default parameters; captured from
-# the implementation to guard against regressions.
-SNAPSHOT_1D = -0.010612881309999999
-SNAPSHOT_2D = 0.010676887276492134
-SNAPSHOT_3D = 5.188027590892116e-06
+# Cross-language conformance vectors: these exact values are also asserted in
+# the TypeScript suite (perlin-noise.spec.ts). The same seed must produce the
+# same field in every package — keep the two lists identical.
+SNAPSHOT_1D = -0.010716767090833334
+SNAPSHOT_2D = 1.653283292556325e-05
+SNAPSHOT_3D = 0.015079820337889127
 
 
 def test_fractal_default_parameters():
@@ -52,16 +53,24 @@ def test_deterministic_for_a_given_seed(call):
     assert call(42) == call(42)
 
 
+# A single octave can coincide at a symmetric point (e.g. cell centres) for two
+# seeds, so sample several off-lattice points and compare the sequences.
 @pytest.mark.parametrize(
-    "call",
+    "samples",
     [
-        lambda seed: PerlinNoise1D(seed=seed).noise(1.5),
-        lambda seed: PerlinNoise2D(seed=seed).noise(1.5, 2.5),
-        lambda seed: PerlinNoise3D(seed=seed).noise(1.5, 2.5, 3.5),
+        lambda seed: [PerlinNoise1D(seed=seed).noise(x) for x in (0.3, 1.3, 4.2)],
+        lambda seed: [
+            PerlinNoise2D(seed=seed).noise(x, y)
+            for x, y in ((0.3, 0.7), (1.3, 2.7), (4.2, 1.8))
+        ],
+        lambda seed: [
+            PerlinNoise3D(seed=seed).noise(x, y, z)
+            for x, y, z in ((0.3, 0.7, 1.1), (1.3, 2.7, 0.4), (4.2, 1.8, 3.6))
+        ],
     ],
 )
-def test_different_seeds_differ(call):
-    assert call(1) != call(2)
+def test_different_seeds_differ(samples):
+    assert samples(1) != samples(2)
 
 
 def test_seed_zero_is_valid_and_deterministic():

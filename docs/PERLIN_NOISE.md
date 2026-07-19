@@ -434,10 +434,13 @@ The remaining differences are idiomatic: TS takes a single options object
 keyword-only arguments. Every parameter is optional and named, so new ones can
 be added without breaking existing call sites.
 
-> **Cross-language note.** The two packages use different (language-native)
-> pseudo-random generators to build the permutation table, so **the same seed
-> produces different fields** in Python and TypeScript. Each is internally
-> deterministic and reproducible. (Aligning them is a roadmap item.)
+> **Cross-language note.** Both packages build the permutation table with the
+> same portable PRNG — a 32-bit **xorshift32** (`utils/seeded-random.ts` /
+> `_seeded_random.py`) driving a Fisher-Yates shuffle with an integer-modulo
+> index. It uses only masked 32-bit integer ops, so it is bit-identical in every
+> language: **the same seed produces the same field** in Python and TypeScript.
+> A set of shared conformance vectors in both test suites guards against drift.
+> The default seed is `0` in both.
 
 ---
 

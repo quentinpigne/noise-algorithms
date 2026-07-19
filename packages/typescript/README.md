@@ -78,7 +78,8 @@ import {
 
 ### Parameters
 
-A Perlin generator takes only a `seed` (optional; defaults to a random seed).
+A Perlin generator takes only a `seed` (optional; defaults to `0`). The same
+seed produces the same field in both the TypeScript and Python packages.
 
 ```ts
 new PerlinNoise2D({ seed? });
