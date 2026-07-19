@@ -1,5 +1,5 @@
 import { NoiseGenerator, NoiseGeneratorOptions } from "../noise-generator";
-import { lerp } from "../utils/interpolation";
+import { fade, lerp } from "../utils/interpolation";
 import { xorshift32 } from "../utils/seeded-random";
 
 /**
@@ -44,11 +44,6 @@ export abstract class PerlinNoise extends NoiseGenerator {
     return [...p, ...p];
   }
 
-  protected fade(t: number): number {
-    // Smoothing function 6t^5 - 15t^4 + 10t^3
-    return t * t * t * (t * (t * 6 - 15) + 10);
-  }
-
   /**
    * Single octave of N-dimensional Perlin noise at the given coordinates.
    * @param coords position, one entry per dimension
@@ -60,7 +55,7 @@ export abstract class PerlinNoise extends NoiseGenerator {
     const floors = coords.map((c) => Math.floor(c));
     const cells = floors.map((f) => f & 255);
     const fracs = coords.map((c, axis) => c - floors[axis]);
-    const faded = fracs.map((f) => this.fade(f));
+    const faded = fracs.map((f) => fade(f));
 
     // Noise contribution of every corner of the surrounding hypercube; the
     // corner index encodes its offsets (bit `axis` = offset along `axis`).
