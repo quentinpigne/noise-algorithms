@@ -92,7 +92,7 @@ describe("Fractal Perlin noise", () => {
 
   it("should generate fractal 3D Perlin noise", () => {
     expect(fractalPerlin3D(0.5, 0.5, 0.5, { seed: 42 })).toBeCloseTo(
-      0.021326086439992432,
+      0.021326036454289054,
       12,
     );
   });

@@ -8,19 +8,25 @@ from ._base import PerlinNoise
 
 _UNIT = 1.0 / math.sqrt(2)
 
-# 12 edge-midpoint directions of a cube, indexed with ``h % 12``.
+# Ken Perlin's improved-noise gradient set: the 12 cube-edge midpoints plus 4
+# balanced duplicates (indices 12-15), so a power-of-2 mask ``h & 15`` selects
+# uniformly with no modulo bias.
 _GRADIENTS = (
     (_UNIT, _UNIT, 0.0),
-    (_UNIT, -_UNIT, 0.0),
     (-_UNIT, _UNIT, 0.0),
+    (_UNIT, -_UNIT, 0.0),
     (-_UNIT, -_UNIT, 0.0),
     (_UNIT, 0.0, _UNIT),
-    (_UNIT, 0.0, -_UNIT),
     (-_UNIT, 0.0, _UNIT),
+    (_UNIT, 0.0, -_UNIT),
     (-_UNIT, 0.0, -_UNIT),
     (0.0, _UNIT, _UNIT),
-    (0.0, _UNIT, -_UNIT),
     (0.0, -_UNIT, _UNIT),
+    (0.0, _UNIT, -_UNIT),
+    (0.0, -_UNIT, -_UNIT),
+    (_UNIT, _UNIT, 0.0),
+    (0.0, -_UNIT, _UNIT),
+    (-_UNIT, _UNIT, 0.0),
     (0.0, -_UNIT, -_UNIT),
 )
 
@@ -28,8 +34,8 @@ _GRADIENTS = (
 class PerlinNoise3D(PerlinNoise):
     """3D Perlin noise generator (single octave)."""
 
-    # The 12 edge-midpoint gradients each have a zero component, so 3D noise peaks
-    # at ±√2/2 (not ±√3/2); ×√2 fills [-1, 1].
+    # The gradients each have a zero component, so 3D noise peaks at ±√2/2
+    # (not ±√3/2); ×√2 fills [-1, 1].
     _NORMALIZATION = math.sqrt(2)
 
     def noise(self, x: float, y: float, z: float) -> float:
@@ -37,7 +43,7 @@ class PerlinNoise3D(PerlinNoise):
         return self._octave(x, y, z)
 
     def _gradient(self, h: int, displacement: list[float]) -> float:
-        gx, gy, gz = _GRADIENTS[h % 12]
+        gx, gy, gz = _GRADIENTS[h & 15]
         return displacement[0] * gx + displacement[1] * gy + displacement[2] * gz
 
 

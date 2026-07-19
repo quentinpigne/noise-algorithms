@@ -30,7 +30,7 @@ from noise_algorithms import (
 # same field in every package — keep the two lists identical.
 SNAPSHOT_1D = -0.02143353418166667
 SNAPSHOT_2D = 2.338095654778e-05
-SNAPSHOT_3D = 0.021326086439992432
+SNAPSHOT_3D = 0.021326036454289054
 
 
 def test_fractal_default_parameters():

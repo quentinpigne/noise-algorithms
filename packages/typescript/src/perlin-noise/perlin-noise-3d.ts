@@ -5,24 +5,31 @@ import { sampleVolume, VolumeRegion } from "../sampling";
 
 import { PerlinNoise } from "./perlin-noise";
 
+// Ken Perlin's improved-noise gradient set: the 12 cube-edge midpoints plus 4
+// balanced duplicates (indices 12-15), so a power-of-2 mask `hash & 15` selects
+// uniformly with no modulo bias.
 const VECTORS_3D = [
   [UNIT, UNIT, 0],
-  [UNIT, -UNIT, 0],
   [-UNIT, UNIT, 0],
+  [UNIT, -UNIT, 0],
   [-UNIT, -UNIT, 0],
   [UNIT, 0, UNIT],
-  [UNIT, 0, -UNIT],
   [-UNIT, 0, UNIT],
+  [UNIT, 0, -UNIT],
   [-UNIT, 0, -UNIT],
   [0, UNIT, UNIT],
-  [0, UNIT, -UNIT],
   [0, -UNIT, UNIT],
+  [0, UNIT, -UNIT],
+  [0, -UNIT, -UNIT],
+  [UNIT, UNIT, 0],
+  [0, -UNIT, UNIT],
+  [-UNIT, UNIT, 0],
   [0, -UNIT, -UNIT],
 ];
 
 export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
-  // The 12 edge-midpoint gradients each have a zero component, so 3D noise peaks
-  // at ±√2/2 (not ±√3/2); ×√2 fills [-1, 1].
+  // The gradients each have a zero component, so 3D noise peaks at ±√2/2
+  // (not ±√3/2); ×√2 fills [-1, 1].
   protected readonly normalization = Math.SQRT2;
 
   /** 3D Gradient : returns the dot product of the gradient vector and the vector from the grid point
@@ -32,7 +39,7 @@ export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
    */
   protected gradient(hash: number, displacement: number[]): number {
     const [x, y, z] = displacement;
-    const vector = VECTORS_3D[hash % 12];
+    const vector = VECTORS_3D[hash & 15];
     return x * vector[0] + y * vector[1] + z * vector[2];
   }
 
