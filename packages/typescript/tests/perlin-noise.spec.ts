@@ -78,21 +78,21 @@ describe("Fractal Perlin noise", () => {
   // in every package — keep the two lists identical.
   it("should generate fractal 1D Perlin noise", () => {
     expect(fractalPerlin1D(0.5, { seed: 42 })).toBeCloseTo(
-      -0.010716767090833334,
+      -0.02143353418166667,
       12,
     );
   });
 
   it("should generate fractal 2D Perlin noise", () => {
     expect(fractalPerlin2D(0.5, 0.5, { seed: 42 })).toBeCloseTo(
-      1.653283292556325e-5,
+      2.338095654778e-5,
       12,
     );
   });
 
   it("should generate fractal 3D Perlin noise", () => {
     expect(fractalPerlin3D(0.5, 0.5, 0.5, { seed: 42 })).toBeCloseTo(
-      0.015079820337889127,
+      0.021326086439992432,
       12,
     );
   });

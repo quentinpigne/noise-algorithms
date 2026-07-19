@@ -139,6 +139,25 @@ const image = fractalPerlinGrid({
 });
 ```
 
+### Output range
+
+Every generator outputs the full `[-1, 1]` range. Need `[0, 1]` instead (for a
+grayscale image or heightmap)? Apply the `toUnitRange` helper to a value or map
+it over a sample:
+
+```ts
+import { fractalPerlinGrid } from "@quentinpigne/noise-algorithms/perlin-noise";
+import { toUnitRange } from "@quentinpigne/noise-algorithms";
+
+const image = fractalPerlinGrid({
+  seed: 42,
+  frequency: 0.03,
+  width: 256,
+  height: 256,
+});
+const grayscale = image.map((row) => row.map(toUnitRange)); // values in [0, 1]
+```
+
 ## Development
 
 ```sh

@@ -10,6 +10,7 @@ from .interfaces import (
     NoiseGenerator3D,
 )
 from .noise_generator import NoiseGenerator
+from .output_range import to_unit_range
 from .perlin import (
     FractalPerlinNoise1D,
     FractalPerlinNoise2D,
@@ -69,5 +70,7 @@ __all__ = [
     "sample_line",
     "sample_grid",
     "sample_volume",
+    # Output range
+    "to_unit_range",
 ]
 __version__ = "0.1.0"

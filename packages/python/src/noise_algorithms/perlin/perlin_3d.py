@@ -28,6 +28,10 @@ _GRADIENTS = (
 class PerlinNoise3D(PerlinNoise):
     """3D Perlin noise generator (single octave)."""
 
+    # The 12 edge-midpoint gradients each have a zero component, so 3D noise peaks
+    # at ±√2/2 (not ±√3/2); ×√2 fills [-1, 1].
+    _NORMALIZATION = math.sqrt(2)
+
     def noise(self, x: float, y: float, z: float) -> float:
         """Return a single octave of 3D Perlin noise at ``(x, y, z)`` in ``[-1, 1]``."""
         return self._octave(x, y, z)

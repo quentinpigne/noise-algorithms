@@ -21,6 +21,10 @@ const VECTORS_3D = [
 ];
 
 export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
+  // The 12 edge-midpoint gradients each have a zero component, so 3D noise peaks
+  // at ±√2/2 (not ±√3/2); ×√2 fills [-1, 1].
+  protected readonly normalization = Math.SQRT2;
+
   /** 3D Gradient : returns the dot product of the gradient vector and the vector from the grid point
    * @param hash hash of the position
    * @param displacement [x, y, z] displacement from the corner

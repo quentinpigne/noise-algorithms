@@ -24,6 +24,9 @@ _GRADIENTS = (
 class PerlinNoise2D(PerlinNoise):
     """2D Perlin noise generator (single octave)."""
 
+    # Raw 2D gradient noise peaks at ±√2/2, so ×√2 fills [-1, 1].
+    _NORMALIZATION = math.sqrt(2)
+
     def noise(self, x: float, y: float) -> float:
         """Return a single octave of 2D Perlin noise at ``(x, y)`` in ``[-1, 1]``."""
         return self._octave(x, y)

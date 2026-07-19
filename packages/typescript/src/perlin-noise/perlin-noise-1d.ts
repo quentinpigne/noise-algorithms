@@ -5,6 +5,9 @@ import { sampleLine, LineRegion } from "../sampling";
 import { PerlinNoise } from "./perlin-noise";
 
 export class PerlinNoise1D extends PerlinNoise implements NoiseGenerator1D {
+  // Raw 1D gradient noise peaks at ±0.5, so ×2 fills [-1, 1].
+  protected readonly normalization = 2;
+
   /** 1D Gradient : keeps or mirrors the displacement depending on the hash
    * @param hash hash of the position
    * @param displacement [x] displacement from the corner

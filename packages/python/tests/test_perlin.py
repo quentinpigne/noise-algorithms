@@ -28,9 +28,9 @@ from noise_algorithms import (
 # Cross-language conformance vectors: these exact values are also asserted in
 # the TypeScript suite (perlin-noise.spec.ts). The same seed must produce the
 # same field in every package — keep the two lists identical.
-SNAPSHOT_1D = -0.010716767090833334
-SNAPSHOT_2D = 1.653283292556325e-05
-SNAPSHOT_3D = 0.015079820337889127
+SNAPSHOT_1D = -0.02143353418166667
+SNAPSHOT_2D = 2.338095654778e-05
+SNAPSHOT_3D = 0.021326086439992432
 
 
 def test_fractal_default_parameters():

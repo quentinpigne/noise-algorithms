@@ -29,6 +29,10 @@ class PerlinNoise(NoiseGenerator):
         seed: Seed for the permutation table; the same seed yields the same field.
     """
 
+    # Multiplier that scales a raw octave to the full [-1, 1] range (reciprocal
+    # of the gradient set's maximum magnitude). Set by each dimension subclass.
+    _NORMALIZATION: float
+
     def __init__(self, *, seed: int = 0) -> None:
         super().__init__(seed=seed)
         self._permutation = build_permutation(self._seed)
@@ -62,7 +66,10 @@ class PerlinNoise(NoiseGenerator):
                 for i in range(0, len(values), 2)
             ]
 
-        return values[0]
+        # Raw gradient noise under-fills [-1, 1]; scale it to the full range, then
+        # clamp to honour the documented contract.
+        value = values[0] * self._NORMALIZATION
+        return max(-1.0, min(1.0, value))
 
     @abstractmethod
     def _gradient(self, h: int, displacement: list[float]) -> float:

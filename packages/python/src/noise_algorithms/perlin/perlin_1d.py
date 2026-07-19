@@ -8,6 +8,9 @@ from ._base import PerlinNoise
 class PerlinNoise1D(PerlinNoise):
     """1D Perlin noise generator (single octave)."""
 
+    # Raw 1D gradient noise peaks at ±0.5, so ×2 fills [-1, 1].
+    _NORMALIZATION = 2.0
+
     def noise(self, x: float) -> float:
         """Return a single octave of 1D Perlin noise at ``x`` in ``[-1, 1]``."""
         return self._octave(x)

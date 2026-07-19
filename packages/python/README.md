@@ -110,6 +110,19 @@ from noise_algorithms import fractal_perlin_grid
 image = fractal_perlin_grid(width=256, height=256, seed=42, frequency=0.03)
 ```
 
+### Output range
+
+Every generator outputs the full `[-1, 1]` range. Need `[0, 1]` instead (for a
+grayscale image or heightmap)? Apply the `to_unit_range` helper to a value or map
+it over a sample:
+
+```python
+from noise_algorithms import fractal_perlin_grid, to_unit_range
+
+image = fractal_perlin_grid(width=256, height=256, seed=42, frequency=0.03)
+grayscale = [[to_unit_range(v) for v in row] for row in image]  # values in [0, 1]
+```
+
 ## Development
 
 This package uses [uv](https://docs.astral.sh/uv/).

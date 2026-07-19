@@ -364,6 +364,26 @@ The public `noise(...)` of a Perlin generator returns exactly this single
 octave. The octave summation of §8 lives separately in
 `FractalNoiseGenerator._fractal` (§9.4).
 
+### 9.3b Output range and normalization
+
+Raw gradient noise does **not** fill `[-1, 1]`. Measured empirically over many
+seeds and points, the peak magnitude is:
+
+| Dim | Peak `\|v\|` | Normalization | Why |
+| --- | --- | --- | --- |
+| 1D | `0.5` | ×2 | ±1 gradients |
+| 2D | `√2/2 ≈ 0.707` | ×√2 | unit gradients |
+| 3D | `√2/2 ≈ 0.707` | ×√2 | the 12 edge-midpoint gradients each have a zero component, so 3D peaks like 2D — **not** `√3/2` |
+
+So `_octave` multiplies by the dimension's factor (a `_NORMALIZATION` /
+`normalization` constant on each subclass) to fill the full range, then clamps to
+`[-1, 1]` to make the contract strict. Since the output is a convex combination
+of corner contributions, it stays within the peak, so the clamp only guards
+against floating-point edge cases.
+
+For output in `[0, 1]` instead (grayscale images, heightmaps), apply the
+`to_unit_range` / `toUnitRange` helper: `(v + 1) / 2`.
+
 ### 9.3 The per-dimension gradient
 
 A subclass is now tiny — it only declares its arity and its gradient set. For

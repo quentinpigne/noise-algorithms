@@ -12,3 +12,5 @@ export type { FractalNoiseGenerator3D } from "./interfaces/fractal-noise-generat
 
 export { sampleLine, sampleGrid, sampleVolume } from "./sampling";
 export type { LineRegion, GridRegion, VolumeRegion } from "./sampling";
+
+export { toUnitRange } from "./output-range";

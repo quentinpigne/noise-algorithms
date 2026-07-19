@@ -81,7 +81,10 @@ export abstract class PerlinNoise extends NoiseGenerator {
       values = reduced;
     }
 
-    return values[0];
+    // Raw gradient noise under-fills [-1, 1]; scale by the dimension's factor so
+    // it spans the full range, then clamp to honour the documented contract.
+    const value = values[0] * this.normalization;
+    return Math.max(-1, Math.min(1, value));
   }
 
   /**
@@ -89,4 +92,12 @@ export abstract class PerlinNoise extends NoiseGenerator {
    * Implemented per dimension.
    */
   protected abstract gradient(hash: number, displacement: number[]): number;
+
+  /**
+   * Multiplier that scales a raw octave to the full `[-1, 1]` range. It is the
+   * reciprocal of the gradient set's maximum magnitude, so it is a property of
+   * the dimension-specific gradients — see the empirical measurement in
+   * `docs/PERLIN_NOISE.md`.
+   */
+  protected abstract readonly normalization: number;
 }

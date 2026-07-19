@@ -17,6 +17,9 @@ const VECTORS_2D = [
 ];
 
 export class PerlinNoise2D extends PerlinNoise implements NoiseGenerator2D {
+  // Raw 2D gradient noise peaks at ±√2/2, so ×√2 fills [-1, 1].
+  protected readonly normalization = Math.SQRT2;
+
   /** 2D Gradient : returns the dot product of the gradient vector and the vector from the grid point
    * @param hash hash of the position
    * @param displacement [x, y] displacement from the corner
