@@ -1,3 +1,4 @@
+export { PerlinNoise } from "./perlin-noise";
 export { PerlinNoise1D, perlin1D, perlinLine } from "./perlin-noise-1d";
 export { PerlinNoise2D, perlin2D, perlinGrid } from "./perlin-noise-2d";
 export { PerlinNoise3D, perlin3D, perlinVolume } from "./perlin-noise-3d";
