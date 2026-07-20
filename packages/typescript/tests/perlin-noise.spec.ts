@@ -124,3 +124,20 @@ describe("Fractal Perlin noise", () => {
     expect(new FractalPerlinNoise2D({ seed: 42 }).noise).toBeTypeOf("function");
   });
 });
+
+describe("String seeds", () => {
+  // Cross-language conformance vector: also asserted in the Python suite. A
+  // string seed is hashed (FNV-1a) to an integer, identically in every package.
+  it("should hash a string seed to a deterministic field", () => {
+    expect(fractalPerlin2D(0.5, 0.5, { seed: "hello" })).toBeCloseTo(
+      -0.01500367218449442,
+      12,
+    );
+  });
+
+  it("should give different fields for different string seeds", () => {
+    const a = fractalPerlin2D(1.5, 2.5, { seed: "alpha" });
+    const b = fractalPerlin2D(1.5, 2.5, { seed: "beta" });
+    expect(a).not.toBe(b);
+  });
+});

@@ -1,6 +1,12 @@
+import { fnv1a32 } from "./utils/seeded-random";
+
 export interface NoiseGeneratorOptions {
-  /** Seed for the noise field; the same seed yields the same field. Defaults to `0`. */
-  seed?: number;
+  /**
+   * Seed for the noise field; the same seed yields the same field. A string is
+   * hashed to an integer, so named seeds (e.g. `"my-world"`) work too. Defaults
+   * to `0`.
+   */
+  seed?: number | string;
 }
 
 /**
@@ -14,6 +20,7 @@ export abstract class NoiseGenerator {
   protected seed: number;
 
   constructor(options: NoiseGeneratorOptions = {}) {
-    this.seed = options.seed ?? 0;
+    const seed = options.seed ?? 0;
+    this.seed = typeof seed === "string" ? fnv1a32(seed) : seed;
   }
 }

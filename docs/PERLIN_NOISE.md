@@ -460,7 +460,9 @@ be added without breaking existing call sites.
 > index. It uses only masked 32-bit integer ops, so it is bit-identical in every
 > language: **the same seed produces the same field** in Python and TypeScript.
 > A set of shared conformance vectors in both test suites guards against drift.
-> The default seed is `0` in both.
+> The default seed is `0` in both. A **string** seed is first hashed to a uint32
+> with **FNV-1a** over its UTF-8 bytes (same module, also bit-identical), so
+> named seeds like `"my-world"` work and match across languages.
 
 ---
 

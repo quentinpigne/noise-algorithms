@@ -33,7 +33,7 @@ class PerlinNoise(NoiseGenerator):
     # of the gradient set's maximum magnitude). Set by each dimension subclass.
     _NORMALIZATION: float
 
-    def __init__(self, *, seed: int = 0) -> None:
+    def __init__(self, *, seed: int | str = 0) -> None:
         super().__init__(seed=seed)
         self._permutation = build_permutation(self._seed)
 

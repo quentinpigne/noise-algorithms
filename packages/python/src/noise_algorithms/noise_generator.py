@@ -7,13 +7,17 @@ implement a dimension-specific ``noise(...)`` method.
 
 from abc import ABC
 
+from ._seeded_random import fnv1a32
+
 
 class NoiseGenerator(ABC):  # noqa: B024 - concept anchor; `noise` is dimension-specific (see interfaces)
     """Holds the seed shared by every dimension of a noise algorithm.
 
     Args:
-        seed: Seed for the noise field; the same seed yields the same field.
+        seed: Seed for the noise field; the same seed yields the same field. A
+            string is hashed to an integer, so named seeds (e.g. ``"my-world"``)
+            work too.
     """
 
-    def __init__(self, *, seed: int = 0) -> None:
-        self._seed = seed
+    def __init__(self, *, seed: int | str = 0) -> None:
+        self._seed = fnv1a32(seed) if isinstance(seed, str) else seed

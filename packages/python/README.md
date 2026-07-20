@@ -62,9 +62,10 @@ with an arbitrary source.
 
 ### Parameters
 
-A Perlin generator takes only `seed` (default `0`); the same seed produces the
-same field in both the Python and TypeScript packages. A fractal generator takes
-the layering options:
+A Perlin generator takes only `seed` (default `0`). It may be an `int` or a
+`str` — a string is hashed to an integer, so named seeds like `seed="my-world"`
+work too. The same seed produces the same field in both the Python and
+TypeScript packages. A fractal generator takes the layering options:
 
 | Parameter | Default | Description |
 | --- | --- | --- |

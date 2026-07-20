@@ -138,3 +138,20 @@ def test_regression_snapshots():
     assert fractal_perlin_3d(0.5, 0.5, 0.5, seed=42) == pytest.approx(
         SNAPSHOT_3D, abs=1e-9
     )
+
+
+# Cross-language conformance vector: also asserted in the TypeScript suite. A
+# string seed is hashed (FNV-1a) to an integer, identically in every package.
+STRING_SEED_SNAPSHOT = -0.01500367218449442
+
+
+def test_string_seed_hashes_to_a_deterministic_field():
+    assert fractal_perlin_2d(0.5, 0.5, seed="hello") == pytest.approx(
+        STRING_SEED_SNAPSHOT, abs=1e-9
+    )
+
+
+def test_different_string_seeds_differ():
+    assert fractal_perlin_2d(1.5, 2.5, seed="alpha") != fractal_perlin_2d(
+        1.5, 2.5, seed="beta"
+    )

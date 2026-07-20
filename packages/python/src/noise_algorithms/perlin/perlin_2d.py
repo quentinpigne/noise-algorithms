@@ -36,7 +36,7 @@ class PerlinNoise2D(PerlinNoise):
         return displacement[0] * gx + displacement[1] * gy
 
 
-def perlin_2d(x: float, y: float, *, seed: int = 0) -> float:
+def perlin_2d(x: float, y: float, *, seed: int | str = 0) -> float:
     """One-shot single octave of 2D Perlin noise at ``(x, y)``.
 
     Builds a :class:`PerlinNoise2D` per call; reuse an instance for loops.
@@ -48,7 +48,7 @@ def perlin_grid(
     *,
     width: int,
     height: int,
-    seed: int = 0,
+    seed: int | str = 0,
     start_x: float = 0.0,
     start_y: float = 0.0,
     step: float = 1.0,
@@ -77,7 +77,7 @@ class FractalPerlinNoise2D(FractalNoiseGenerator):
     def __init__(
         self,
         *,
-        seed: int = 0,
+        seed: int | str = 0,
         octaves: int = 4,
         lacunarity: float = 2.0,
         persistence: float = 0.5,
@@ -103,7 +103,7 @@ def fractal_perlin_2d(
     x: float,
     y: float,
     *,
-    seed: int = 0,
+    seed: int | str = 0,
     octaves: int = 4,
     lacunarity: float = 2.0,
     persistence: float = 0.5,
@@ -126,7 +126,7 @@ def fractal_perlin_grid(
     *,
     width: int,
     height: int,
-    seed: int = 0,
+    seed: int | str = 0,
     octaves: int = 4,
     lacunarity: float = 2.0,
     persistence: float = 0.5,

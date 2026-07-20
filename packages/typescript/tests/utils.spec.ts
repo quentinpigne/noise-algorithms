@@ -1,4 +1,5 @@
 import { fade, lerp } from "../src/utils/interpolation";
+import { utf8Bytes } from "../src/utils/utf8";
 
 describe("interpolation", () => {
   describe("fade", () => {
@@ -32,5 +33,17 @@ describe("interpolation", () => {
       expect(lerp(0, 10, 2)).toBe(20);
       expect(lerp(0, 10, -1)).toBe(-10);
     });
+  });
+});
+
+describe("utf8Bytes", () => {
+  it("encodes ASCII as one byte per character", () => {
+    expect(utf8Bytes("hello")).toEqual([104, 101, 108, 108, 111]);
+  });
+
+  it("encodes multi-byte code points like str.encode('utf-8')", () => {
+    expect(utf8Bytes("é")).toEqual([0xc3, 0xa9]); // 2 bytes
+    expect(utf8Bytes("€")).toEqual([0xe2, 0x82, 0xac]); // 3 bytes
+    expect(utf8Bytes("😀")).toEqual([0xf0, 0x9f, 0x98, 0x80]); // 4 bytes (surrogate pair)
   });
 });

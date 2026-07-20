@@ -21,7 +21,7 @@ class PerlinNoise1D(PerlinNoise):
         return d if (h & 1) == 0 else -d
 
 
-def perlin_1d(x: float, *, seed: int = 0) -> float:
+def perlin_1d(x: float, *, seed: int | str = 0) -> float:
     """One-shot single octave of 1D Perlin noise at ``x``.
 
     Builds a :class:`PerlinNoise1D` per call; reuse an instance for loops.
@@ -32,7 +32,7 @@ def perlin_1d(x: float, *, seed: int = 0) -> float:
 def perlin_line(
     *,
     count: int,
-    seed: int = 0,
+    seed: int | str = 0,
     start: float = 0.0,
     step: float = 1.0,
 ) -> list[float]:
@@ -53,7 +53,7 @@ class FractalPerlinNoise1D(FractalNoiseGenerator):
     def __init__(
         self,
         *,
-        seed: int = 0,
+        seed: int | str = 0,
         octaves: int = 4,
         lacunarity: float = 2.0,
         persistence: float = 0.5,
@@ -78,7 +78,7 @@ class FractalPerlinNoise1D(FractalNoiseGenerator):
 def fractal_perlin_1d(
     x: float,
     *,
-    seed: int = 0,
+    seed: int | str = 0,
     octaves: int = 4,
     lacunarity: float = 2.0,
     persistence: float = 0.5,
@@ -100,7 +100,7 @@ def fractal_perlin_1d(
 def fractal_perlin_line(
     *,
     count: int,
-    seed: int = 0,
+    seed: int | str = 0,
     octaves: int = 4,
     lacunarity: float = 2.0,
     persistence: float = 0.5,

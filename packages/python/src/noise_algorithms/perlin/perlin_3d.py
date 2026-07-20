@@ -47,7 +47,7 @@ class PerlinNoise3D(PerlinNoise):
         return displacement[0] * gx + displacement[1] * gy + displacement[2] * gz
 
 
-def perlin_3d(x: float, y: float, z: float, *, seed: int = 0) -> float:
+def perlin_3d(x: float, y: float, z: float, *, seed: int | str = 0) -> float:
     """One-shot single octave of 3D Perlin noise at ``(x, y, z)``.
 
     Builds a :class:`PerlinNoise3D` per call; reuse an instance for loops.
@@ -60,7 +60,7 @@ def perlin_volume(
     width: int,
     height: int,
     depth: int,
-    seed: int = 0,
+    seed: int | str = 0,
     start_x: float = 0.0,
     start_y: float = 0.0,
     start_z: float = 0.0,
@@ -92,7 +92,7 @@ class FractalPerlinNoise3D(FractalNoiseGenerator):
     def __init__(
         self,
         *,
-        seed: int = 0,
+        seed: int | str = 0,
         octaves: int = 4,
         lacunarity: float = 2.0,
         persistence: float = 0.5,
@@ -119,7 +119,7 @@ def fractal_perlin_3d(
     y: float,
     z: float,
     *,
-    seed: int = 0,
+    seed: int | str = 0,
     octaves: int = 4,
     lacunarity: float = 2.0,
     persistence: float = 0.5,
@@ -143,7 +143,7 @@ def fractal_perlin_volume(
     width: int,
     height: int,
     depth: int,
-    seed: int = 0,
+    seed: int | str = 0,
     octaves: int = 4,
     lacunarity: float = 2.0,
     persistence: float = 0.5,
