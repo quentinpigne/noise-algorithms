@@ -43,7 +43,10 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - run: npm version --no-git-tag-version "$VERSION"
+      # --allow-same-version: the release commit already carries the target
+      # version, so deriving it from the tag is a no-op — npm would otherwise
+      # fail with "Version not changed".
+      - run: npm version --no-git-tag-version --allow-same-version "$VERSION"
       - name: Publish to npm
         # Drop the committed .npmrc so the @quentinpigne scope resolves to npm
         # (it otherwise pins the scope to GitHub Packages).

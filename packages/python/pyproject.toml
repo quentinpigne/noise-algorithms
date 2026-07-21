@@ -1,6 +1,6 @@
 [project]
 name = "noise-algorithms"
-version = "0.1.0"
+version = "1.0.0"
 description = "A collection of noise generation algorithms (Perlin, ...) in pure Python"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -16,7 +16,7 @@ keywords = [
     "noise-generator",
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",

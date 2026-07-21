@@ -22,8 +22,9 @@ in real projects.
 | [Perlin noise](https://en.wikipedia.org/wiki/Perlin_noise) | ✅ | ✅ | ✅ |
 
 Each implementation supports fractal (multi-octave) noise configured with
-`seed`, `scale`, `octaves`, `lacunarity` and `persistence`, and returns values
-in the `[-1, 1]` interval.
+`seed`, `frequency`, `octaves`, `lacunarity` and `persistence`, and returns
+values in the `[-1, 1]` interval. The same seed produces the same field in every
+language.
 
 For a detailed explanation of how Perlin noise works (1D → N-D) and how it is
 implemented here, see [`docs/PERLIN_NOISE.md`](./docs/PERLIN_NOISE.md).
@@ -90,7 +91,7 @@ schedule. Order is not significant, and suggestions are welcome.
 - [ ] Seamless / tileable noise
 - [ ] Domain warping
 - [ ] Analytic derivatives (gradients)
-- [ ] Consistent output across languages for a given seed
+- [x] Consistent output across languages for a given seed
 
 ## Contributing
 

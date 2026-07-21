@@ -3,11 +3,15 @@ import {
   PerlinNoise1D,
   PerlinNoise2D,
   PerlinNoise3D,
+  FractalPerlinNoise1D,
   FractalPerlinNoise2D,
+  FractalPerlinNoise3D,
   perlinLine,
   perlinGrid,
   perlinVolume,
+  fractalPerlinLine,
   fractalPerlinGrid,
+  fractalPerlinVolume,
 } from "../src/perlin-noise";
 
 describe("sampleLine", () => {
@@ -88,6 +92,14 @@ describe("region one-shots match building a generator and sampling it", () => {
     );
   });
 
+  it("fractalPerlinLine == sampleLine(new FractalPerlinNoise1D)", () => {
+    expect(fractalPerlinLine({ seed: 7, octaves: 3, count: 5 })).toEqual(
+      sampleLine(new FractalPerlinNoise1D({ seed: 7, octaves: 3 }), {
+        count: 5,
+      }),
+    );
+  });
+
   it("fractalPerlinGrid == sampleGrid(new FractalPerlinNoise2D)", () => {
     expect(
       fractalPerlinGrid({ seed: 42, frequency: 0.05, width: 4, height: 4 }),
@@ -95,6 +107,18 @@ describe("region one-shots match building a generator and sampling it", () => {
       sampleGrid(new FractalPerlinNoise2D({ seed: 42, frequency: 0.05 }), {
         width: 4,
         height: 4,
+      }),
+    );
+  });
+
+  it("fractalPerlinVolume == sampleVolume(new FractalPerlinNoise3D)", () => {
+    expect(
+      fractalPerlinVolume({ seed: 2, width: 2, height: 2, depth: 2 }),
+    ).toEqual(
+      sampleVolume(new FractalPerlinNoise3D({ seed: 2 }), {
+        width: 2,
+        height: 2,
+        depth: 2,
       }),
     );
   });
