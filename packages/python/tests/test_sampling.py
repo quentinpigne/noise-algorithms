@@ -1,11 +1,15 @@
 """Tests for the region-sampling helpers."""
 
 from noise_algorithms import (
+    FractalPerlinNoise1D,
     FractalPerlinNoise2D,
+    FractalPerlinNoise3D,
     PerlinNoise1D,
     PerlinNoise2D,
     PerlinNoise3D,
     fractal_perlin_grid,
+    fractal_perlin_line,
+    fractal_perlin_volume,
     perlin_grid,
     perlin_line,
     perlin_volume,
@@ -63,6 +67,12 @@ def test_region_one_shots_match_building_a_generator_and_sampling_it():
     assert perlin_volume(width=2, height=2, depth=2, seed=2) == sample_volume(
         PerlinNoise3D(seed=2), width=2, height=2, depth=2
     )
+    assert fractal_perlin_line(count=5, seed=7, octaves=3) == sample_line(
+        FractalPerlinNoise1D(seed=7, octaves=3), count=5
+    )
     assert fractal_perlin_grid(
         width=4, height=4, seed=42, frequency=0.05
     ) == sample_grid(FractalPerlinNoise2D(seed=42, frequency=0.05), width=4, height=4)
+    assert fractal_perlin_volume(width=2, height=2, depth=2, seed=2) == sample_volume(
+        FractalPerlinNoise3D(seed=2), width=2, height=2, depth=2
+    )

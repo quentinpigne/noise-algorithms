@@ -68,8 +68,11 @@ We need a cheap, deterministic way to turn integer corner coordinates into a
 # _permutation.py
 def build_permutation(seed: int) -> tuple[int, ...]:
     values = list(range(256))
-    random.Random(seed).shuffle(values)
-    return tuple(values + values)   # 512 entries: the 256 values, duplicated
+    rng = xorshift32(seed)                 # portable PRNG, identical in every language
+    for i in range(255, 0, -1):            # Fisher-Yates shuffle
+        j = rng() % (i + 1)
+        values[i], values[j] = values[j], values[i]
+    return tuple(values + values)          # 512 entries: the 256 values, duplicated
 ```
 
 To hash several coordinates, the table is applied repeatedly and the
@@ -214,9 +217,11 @@ The cell is a **cube** with **8 corners**. Same recipe, one more axis.
 
 - **Locate**: `x0/x1, y0/y1, z0/z1` and `xf, yf, zf`.
 - **Hash** folds three coordinates: `perm[perm[perm[perm[cx]+cy]+cz]]`.
-- **Gradients**: **12 vectors** pointing to the midpoints of the cube's edges,
-  selected with `h % 12`. The contribution is again `gradient · displacement`,
-  with displacements like `(xf−1, yf, zf−1)` for the 8 corners.
+- **Gradients**: **12 directions** pointing to the midpoints of the cube's
+  edges, held in a 16-entry table (the 12 edges + 4 balanced duplicates) selected
+  with `h & 15` — a power-of-2 mask that avoids the modulo bias of `h % 12`. The
+  contribution is again `gradient · displacement`, with displacements like
+  `(xf−1, yf, zf−1)` for the 8 corners.
 - **Blend**: interpolate the 8 contributions along x (4 lerps), then the 4
   results along y (2 lerps), then those along z (1 lerp) — a *trilinear* blend
   with faded weights `u, v, w`.
@@ -399,8 +404,8 @@ class PerlinNoise2D(PerlinNoise):
         return displacement[0] * gx + displacement[1] * gy
 ```
 
-1D returns `±displacement[0]` (sign from `h & 1`); 3D dots a 12-vector table
-chosen with `h % 12`.
+1D returns `±displacement[0]` (sign from `h & 1`); 3D dots a 16-entry table
+chosen with `h & 15` (12 edge directions + 4 balanced duplicates).
 
 ### 9.4 Fractal layering is a second abstract concept
 

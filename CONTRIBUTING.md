@@ -64,5 +64,6 @@ the new image before committing it.
 ## Pull requests
 
 - Keep changes focused; one logical change per pull request.
-- Update the relevant package `CHANGELOG.md` under the `Unreleased` section.
+- Record your change in the relevant package `CHANGELOG.md`, under an
+  `## [Unreleased]` section at the top (add one if it isn't there yet).
 - Update documentation when behaviour or the public API changes.

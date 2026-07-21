@@ -48,9 +48,9 @@ describe("Perlin noise generator (single octave)", () => {
     }
   });
 
-  it("should exercise all 3D gradient vectors (regression for h % 12)", () => {
-    // With the previous `h & 11` masking, indices 4..7 were never reached.
-    // A wide sweep should now stay bounded and vary, confirming full coverage.
+  it("should exercise the 3D gradient set across a wide sweep", () => {
+    // The `h & 15` selection reaches every gradient; a wide sweep should stay
+    // bounded and produce many distinct values, confirming broad coverage.
     const perlin = new PerlinNoise3D({ seed: 7 });
     const values = new Set<number>();
     for (let i = 0; i < 200; i++) {
