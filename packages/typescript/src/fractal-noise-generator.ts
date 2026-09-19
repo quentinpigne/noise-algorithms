@@ -17,11 +17,15 @@ export interface FractalOptions {
  * increasing frequency and decreasing amplitude, and the contributions are
  * summed and normalised back into the `[-1, 1]` interval.
  *
- * The settings live here; the stacking loop is **written out per dimension** in
- * each subclass. A source-agnostic loop has to pass coordinates as an array and
- * scale them with a `map`, which allocates once per octave — four octaves of 3D
- * noise spent more time allocating than sampling. The unrolled loops keep the
- * same operations in the same order, so the field is unchanged bit-for-bit.
+ * summed and normalised back into the `[-1, 1]` interval. This dimension- and
+ * source-agnostic engine lives here; subclasses bind a concrete source and
+ * adapt its `noise(...)` signature via `sample`.
+ *
+ * **The bundled dimensions do not run it.** Passing coordinates as an array
+ * means a `map` allocation per octave, and four octaves of 3D noise spent more
+ * time allocating than sampling; `FractalPerlinNoise{1,2,3}D` each write their
+ * own loop. `fractal` stays as the extension point and as the specification the
+ * unrolled loops are tested against.
  */
 export abstract class FractalNoiseGenerator {
   protected octaves: number;
@@ -35,4 +39,33 @@ export abstract class FractalNoiseGenerator {
     this.persistence = options.persistence ?? 0.5;
     this.frequency = options.frequency ?? 0.01;
   }
+
+  /**
+   * Sum `octaves` layers of the source noise at the given coordinates.
+   * @param coords position, one entry per dimension
+   * @returns value in interval [-1, 1]
+   */
+  protected fractal(coords: number[]): number {
+    let value = 0;
+    let maxValue = 0;
+
+    let amplitude = 1;
+    let frequency = this.frequency;
+
+    for (let i = 0; i < this.octaves; i++) {
+      value += this.sample(coords.map((c) => c * frequency)) * amplitude;
+      maxValue += amplitude;
+      amplitude *= this.persistence;
+      frequency *= this.lacunarity;
+    }
+
+    return value / maxValue;
+  }
+
+  /**
+   * Sample the wrapped source generator at the given coordinates.
+   * Implemented per dimension to bridge the generic coordinate array and the
+   * source's `noise(...)` signature.
+   */
+  protected abstract sample(coords: number[]): number;
 }

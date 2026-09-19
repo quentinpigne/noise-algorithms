@@ -31,12 +31,17 @@ ops and standard IEEE-754 `f64`):
   keeps the generic loops, and the two agree bit-for-bit.
 
 **Unrolled in TypeScript.** `packages/typescript` writes the octave and the
-fractal loop out per dimension instead of driving them with a dimension-agnostic
-engine. A generic engine has to carry coordinates, corner offsets and
+fractal loop out per dimension rather than driving them with the dimension-
+agnostic engine. A generic engine carries coordinates, corner offsets and
 intermediate reductions in arrays — sixteen allocations per 3D call — which cost
 eleven times the arithmetic it performed. Same operations, same order, same
-values; only the allocations are gone. Python still reads as the reference form,
-and `docs/PERLIN_NOISE.md` §9 shows it.
+values; only the allocations are gone.
+
+**The generic engines stay**, in both languages: they are the extension point a
+new dimension or gradient set builds on, and in TypeScript they are also the
+executable specification — `octave-agreement.spec.ts` pins the unrolled path to
+the generic one **bit-for-bit**, so the two cannot drift. Two implementations of
+the same maths is precisely what this invariant cannot survive unguarded.
 
 If you touch ANY of the above, you must: mirror it in **both** packages, keep the
 op-order identical (f64 determinism), regenerate the golden vectors + integration

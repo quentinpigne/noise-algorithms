@@ -45,6 +45,17 @@ export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
   // (not ±√3/2); ×√2 fills [-1, 1].
   protected readonly normalization = Math.SQRT2;
 
+  /** 3D Gradient : returns the dot product of the gradient vector and the vector from the grid point
+   * @param hash hash of the position
+   * @param displacement [x, y, z] displacement from the corner
+   * @returns gradient value
+   */
+  protected gradient(hash: number, displacement: number[]): number {
+    const [x, y, z] = displacement;
+    const vector = VECTORS_3D[hash & 15];
+    return x * vector[0] + y * vector[1] + z * vector[2];
+  }
+
   /**
    * Generate a single-octave noise value at a given position
    * @param x position on the x-axis

@@ -21,6 +21,11 @@ export class FractalPerlinNoise2D
     this.source = new PerlinNoise2D({ seed });
   }
 
+  /** Bridges the generic `fractal` engine to the source's signature. */
+  protected sample(coords: number[]): number {
+    return this.source.noise(coords[0], coords[1]);
+  }
+
   /**
    * Generate a multi-octave noise value at a given position
    * @param x position on the x-axis

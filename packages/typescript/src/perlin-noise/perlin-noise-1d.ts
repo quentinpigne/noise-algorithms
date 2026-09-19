@@ -10,6 +10,16 @@ export class PerlinNoise1D extends PerlinNoise implements NoiseGenerator1D {
   // Raw 1D gradient noise peaks at ±0.5, so ×2 fills [-1, 1].
   protected readonly normalization = 2;
 
+  /** 1D Gradient : keeps or mirrors the displacement depending on the hash
+   * @param hash hash of the position
+   * @param displacement [x] displacement from the corner
+   * @returns gradient value
+   */
+  protected gradient(hash: number, displacement: number[]): number {
+    const [x] = displacement;
+    return (hash & 1) === 0 ? x : -x;
+  }
+
   /**
    * Generate a single-octave noise value at a given position
    * @param x position on the x-axis

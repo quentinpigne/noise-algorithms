@@ -21,10 +21,11 @@ npm run format            # Prettier (write); format:check in CI
 - `src/interfaces/` — dimension interfaces (type-only): `NoiseGenerator{1,2,3}D`,
   `FractalNoiseGenerator{1,2,3}D`.
 - `src/perlin-noise/` — Perlin: `perlin-noise.ts` (abstract base: seeded
-  permutation + `scaled`), `perlin-noise-{1,2,3}d.ts` (classes + `perlin{D}`
-  fns; each **unrolls its own octave** — see the root `CLAUDE.md`),
-  `fractal-perlin-noise-{1,2,3}d.ts` (classes + `fractalPerlin{D}` + region
-  one-shots). The per-dim `normalization` constant lives on each subclass.
+  permutation, generic `octave`, `scaled`), `perlin-noise-{1,2,3}d.ts` (classes
+  - `perlin{D}` fns; each **unrolls its own octave** and is pinned to the generic
+    one by `tests/octave-agreement.spec.ts` — see the root `CLAUDE.md`),
+    `fractal-perlin-noise-{1,2,3}d.ts` (classes + `fractalPerlin{D}` + region
+    one-shots). The per-dim `normalization` constant lives on each subclass.
 - `src/sampling/` — `sampleLine`/`sampleGrid`/`sampleVolume` (generic).
 - `src/output-range.ts` — `toUnitRange`.
 - `src/utils/` — **internal, never exported**: `seeded-random.ts` (`xorshift32`,

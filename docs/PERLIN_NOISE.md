@@ -320,9 +320,11 @@ arrays, which is sixteen allocations per 3D call. Measured, that cost eleven
 times the arithmetic it performed — 2 814 ns per call against 248 ns once written
 out in scalars, and 11 701 ns against 1 029 ns for four fractal octaves. The
 unrolled code performs **the same operations in the same order**, so the field is
-unchanged bit-for-bit; the golden vectors and the image snapshots are what prove
-it. Read the Python below for the algorithm, the TypeScript for the shape it
-takes when a voxel world asks for two thousand samples per chunk.
+unchanged bit-for-bit; the golden vectors, the image snapshots and a dedicated
+agreement test are what prove it. The generic engine is still there — it remains
+the extension point for a new dimension, and it is the oracle the unrolled code
+is checked against. Read the Python below for the algorithm, the TypeScript for
+the shape it takes when a voxel world asks for two thousand samples per chunk.
 
 ### 9.1 File map (Python)
 
