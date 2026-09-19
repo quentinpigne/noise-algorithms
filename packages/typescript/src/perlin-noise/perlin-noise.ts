@@ -1,5 +1,4 @@
 import { NoiseGenerator, NoiseGeneratorOptions } from "../noise-generator";
-import { fade, lerp } from "../utils/interpolation";
 import { xorshift32 } from "../utils/seeded-random";
 
 /**
@@ -10,11 +9,18 @@ import { xorshift32 } from "../utils/seeded-random";
  * use `FractalPerlinNoise{1,2,3}D` or `fractalPerlin{1,2,3}D` from the same
  * entry point.
  *
- * The base implements a dimension-agnostic engine: hashing folds the
- * permutation table over the coordinates, every corner of the surrounding
- * hypercube contributes a gradient dot product, and the contributions are
- * combined by a pairwise lerp reduction along each axis. Subclasses only
- * provide their dimension-specific gradient set via `gradient`.
+ * The base owns what every dimension shares: the seeded permutation table and
+ * the final scale-and-clamp. The octave itself is **unrolled per dimension** in
+ * each subclass — hashing the corners, dotting the gradients and reducing by
+ * lerp are written out in scalars rather than driven by a generic hypercube
+ * loop.
+ *
+ * That loop was the readable form, and it cost eleven times the arithmetic it
+ * performed: a dimension-agnostic engine has to carry coordinates, offsets and
+ * intermediate reductions in arrays, which meant sixteen allocations per call
+ * in 3D. The unrolled form keeps **the same operations in the same order**, so
+ * the field is unchanged bit-for-bit — the cross-language invariant holds, and
+ * the golden vectors are what proves it.
  */
 export abstract class PerlinNoise extends NoiseGenerator {
   protected permutation!: number[];
@@ -45,53 +51,12 @@ export abstract class PerlinNoise extends NoiseGenerator {
   }
 
   /**
-   * Single octave of N-dimensional Perlin noise at the given coordinates.
-   * @param coords position, one entry per dimension
-   * @returns noise value in interval [-1, 1]
+   * Scale a raw octave to `[-1, 1]` and clamp it to the documented contract.
+   * Shared so every dimension ends its computation the same way.
    */
-  protected octave(coords: number[]): number {
-    const n = coords.length;
-
-    const floors = coords.map((c) => Math.floor(c));
-    const cells = floors.map((f) => f & 255);
-    const fracs = coords.map((c, axis) => c - floors[axis]);
-    const faded = fracs.map((f) => fade(f));
-
-    // Noise contribution of every corner of the surrounding hypercube; the
-    // corner index encodes its offsets (bit `axis` = offset along `axis`).
-    let values: number[] = [];
-    for (let corner = 0; corner < 1 << n; corner++) {
-      let h = this.permutation[(cells[0] + (corner & 1)) & 255];
-      for (let axis = 1; axis < n; axis++) {
-        h =
-          this.permutation[h + ((cells[axis] + ((corner >> axis) & 1)) & 255)];
-      }
-      h = this.permutation[h];
-
-      const displacement = fracs.map((f, axis) => f - ((corner >> axis) & 1));
-      values.push(this.gradient(h, displacement));
-    }
-
-    // Pairwise lerp reduction along each axis: 2^n -> 2^(n-1) -> ... -> 1.
-    for (let axis = 0; axis < n; axis++) {
-      const reduced: number[] = [];
-      for (let i = 0; i < values.length; i += 2) {
-        reduced.push(lerp(values[i], values[i + 1], faded[axis]));
-      }
-      values = reduced;
-    }
-
-    // Raw gradient noise under-fills [-1, 1]; scale by the dimension's factor so
-    // it spans the full range, then clamp to honour the documented contract.
-    const value = values[0] * this.normalization;
-    return Math.max(-1, Math.min(1, value));
+  protected scaled(raw: number): number {
+    return Math.max(-1, Math.min(1, raw * this.normalization));
   }
-
-  /**
-   * Dot product of the hashed gradient with the corner displacement.
-   * Implemented per dimension.
-   */
-  protected abstract gradient(hash: number, displacement: number[]): number;
 
   /**
    * Multiplier that scales a raw octave to the full `[-1, 1]` range. It is the

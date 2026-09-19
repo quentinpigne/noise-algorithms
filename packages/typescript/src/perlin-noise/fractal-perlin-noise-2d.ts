@@ -21,10 +21,6 @@ export class FractalPerlinNoise2D
     this.source = new PerlinNoise2D({ seed });
   }
 
-  protected sample(coords: number[]): number {
-    return this.source.noise(coords[0], coords[1]);
-  }
-
   /**
    * Generate a multi-octave noise value at a given position
    * @param x position on the x-axis
@@ -32,7 +28,19 @@ export class FractalPerlinNoise2D
    * @returns value in interval [-1, 1]
    */
   noise(x: number, y: number): number {
-    return this.fractal([x, y]);
+    let value = 0;
+    let maxValue = 0;
+    let amplitude = 1;
+    let frequency = this.frequency;
+
+    for (let i = 0; i < this.octaves; i++) {
+      value += this.source.noise(x * frequency, y * frequency) * amplitude;
+      maxValue += amplitude;
+      amplitude *= this.persistence;
+      frequency *= this.lacunarity;
+    }
+
+    return value / maxValue;
   }
 }
 

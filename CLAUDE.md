@@ -25,8 +25,18 @@ ops and standard IEEE-754 `f64`):
   edges + 4 balanced duplicates, avoids the `% 12` modulo bias). Unit-length.
 - **Normalization**: each octave × per-dimension factor (`[2, √2, √2]`) then
   clamped, so output fills `[-1, 1]`.
-- **`fade` / `lerp`**, hypercube octave engine, and fractal loop — identical
-  order of operations.
+- **`fade` / `lerp`**, the octave's corner/reduction arithmetic, and the fractal
+  loop — identical **order of operations**. The *shape* of the code is not
+  normative: TypeScript unrolls both per dimension for speed (see below), Python
+  keeps the generic loops, and the two agree bit-for-bit.
+
+**Unrolled in TypeScript.** `packages/typescript` writes the octave and the
+fractal loop out per dimension instead of driving them with a dimension-agnostic
+engine. A generic engine has to carry coordinates, corner offsets and
+intermediate reductions in arrays — sixteen allocations per 3D call — which cost
+eleven times the arithmetic it performed. Same operations, same order, same
+values; only the allocations are gone. Python still reads as the reference form,
+and `docs/PERLIN_NOISE.md` §9 shows it.
 
 If you touch ANY of the above, you must: mirror it in **both** packages, keep the
 op-order identical (f64 determinism), regenerate the golden vectors + integration

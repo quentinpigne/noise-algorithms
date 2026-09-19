@@ -309,10 +309,20 @@ source; the rest are the fractal layer's parameters.
 
 ## 9. How this library implements it
 
-The implementation mirrors the structure above. The **engine is
+The implementation mirrors the structure above. In Python the **engine is
 dimension-agnostic** and lives in a shared base class; each dimension only
-supplies its **gradient strategy**. The Python and TypeScript packages share the
-same design.
+supplies its **gradient strategy**. That form is the one this section describes,
+because it is the one that reads like the maths.
+
+**TypeScript unrolls it.** The generic engine expresses §7 faithfully, and pays
+for it: coordinates, corner offsets and the intermediate reductions all travel in
+arrays, which is sixteen allocations per 3D call. Measured, that cost eleven
+times the arithmetic it performed — 2 814 ns per call against 248 ns once written
+out in scalars, and 11 701 ns against 1 029 ns for four fractal octaves. The
+unrolled code performs **the same operations in the same order**, so the field is
+unchanged bit-for-bit; the golden vectors and the image snapshots are what prove
+it. Read the Python below for the algorithm, the TypeScript for the shape it
+takes when a voxel world asks for two thousand samples per chunk.
 
 ### 9.1 File map (Python)
 
