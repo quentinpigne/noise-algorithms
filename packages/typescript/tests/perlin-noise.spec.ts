@@ -76,24 +76,27 @@ describe("Fractal Perlin noise", () => {
   // Cross-language conformance vectors: these exact values are also asserted in
   // the Python suite (test_perlin.py). The same seed must produce the same field
   // in every package — keep the two lists identical.
+  //
+  // They are asserted with `toBe`, not `toBeCloseTo`. The invariant these vectors
+  // guard is bit-for-bit identity, and a tolerance cannot express it: at twelve
+  // decimals a value may drift by thousands of ULPs and still pass, so the
+  // assertion would agree while the field quietly differed. Each literal is the
+  // shortest decimal that round-trips to its f64, and parses to the same bits in
+  // JavaScript and in Python — verified against the raw bytes.
   it("should generate fractal 1D Perlin noise", () => {
-    expect(fractalPerlin1D(0.5, { seed: 42 })).toBeCloseTo(
-      -0.02143353418166667,
-      12,
-    );
+    // bf95f2ac21644eb3
+    expect(fractalPerlin1D(0.5, { seed: 42 })).toBe(-0.02143353418166667);
   });
 
   it("should generate fractal 2D Perlin noise", () => {
-    expect(fractalPerlin2D(0.5, 0.5, { seed: 42 })).toBeCloseTo(
-      2.338095654778e-5,
-      12,
-    );
+    // 3ef88447197c25d4
+    expect(fractalPerlin2D(0.5, 0.5, { seed: 42 })).toBe(2.338095654778e-5);
   });
 
   it("should generate fractal 3D Perlin noise", () => {
-    expect(fractalPerlin3D(0.5, 0.5, 0.5, { seed: 42 })).toBeCloseTo(
+    // 3f95d67e147f7673
+    expect(fractalPerlin3D(0.5, 0.5, 0.5, { seed: 42 })).toBe(
       0.021326036454289054,
-      12,
     );
   });
 
@@ -128,10 +131,11 @@ describe("Fractal Perlin noise", () => {
 describe("String seeds", () => {
   // Cross-language conformance vector: also asserted in the Python suite. A
   // string seed is hashed (FNV-1a) to an integer, identically in every package.
+  // Exact, for the same reason as the vectors above.
   it("should hash a string seed to a deterministic field", () => {
-    expect(fractalPerlin2D(0.5, 0.5, { seed: "hello" })).toBeCloseTo(
+    // bf8eba3ecad18713
+    expect(fractalPerlin2D(0.5, 0.5, { seed: "hello" })).toBe(
       -0.01500367218449442,
-      12,
     );
   });
 

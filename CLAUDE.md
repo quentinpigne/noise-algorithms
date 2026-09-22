@@ -13,7 +13,8 @@ is true across the whole repo.
 **The same seed must produce the same field, bit-for-bit, in every language.**
 This is a headline guarantee, locked by **shared conformance vectors** duplicated
 in each test suite (`perlin-noise.spec.ts` ↔ `test_perlin.py`) — the exact same
-numeric literals in both.
+numeric literals in both, asserted with `toBe` / `==` and never a tolerance,
+because a tolerance cannot express a bit-for-bit invariant.
 
 The shared, portable spec (all designed to be reproducible with 32-bit integer
 ops and standard IEEE-754 `f64`):

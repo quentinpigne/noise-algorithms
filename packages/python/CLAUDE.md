@@ -50,5 +50,8 @@ Coverage (ephemeral): `uv run --with pytest-cov pytest -m "not integration" --co
   `PerlinNoise` / `FractalNoiseGenerator` instead.
 - Any change to the noise math must stay bit-identical with TypeScript — see root
   `CLAUDE.md`, update the shared golden vectors in `tests/test_perlin.py`, and
-  keep `tests/test_octave_agreement.py` green (it compares raw f64 bits, so it is
-  strictly tighter than the conformance vectors, which use a `1e-9` tolerance).
+  keep `tests/test_octave_agreement.py` green.
+- The conformance vectors assert with `==`, never `pytest.approx`: the invariant
+  is bit-for-bit, and a tolerance cannot express it. Each literal is the shortest
+  decimal that round-trips to its f64 and parses identically in both languages —
+  its hex bits are in the comment beside it. Regenerate with `repr()`.

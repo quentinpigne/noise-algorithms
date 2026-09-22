@@ -54,5 +54,8 @@ string` (string hashed via `fnv1a32`).
   `FractalNoiseGenerator` instead.
 - Any change to the noise math must stay bit-identical with Python — see root
   `CLAUDE.md`, update the shared golden vectors in `tests/perlin-noise.spec.ts`,
-  and keep `tests/octave-agreement.spec.ts` green (it compares raw f64 bits, so it
-  is strictly tighter than the conformance vectors, which use `toBeCloseTo`).
+  and keep `tests/octave-agreement.spec.ts` green.
+- The conformance vectors assert with `toBe`, never `toBeCloseTo`: the invariant
+  is bit-for-bit, and a tolerance cannot express it. Each literal is the shortest
+  decimal that round-trips to its f64 and parses identically in both languages —
+  its hex bits are in the comment beside it. Regenerate with `String(value)`.
