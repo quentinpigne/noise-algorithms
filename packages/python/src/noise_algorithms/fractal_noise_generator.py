@@ -6,6 +6,12 @@ frequency and decreasing amplitude, and the contributions are summed and
 normalised back into the ``[-1, 1]`` interval. This dimension- and
 source-agnostic engine lives here; subclasses bind a concrete source and adapt
 its ``noise(...)`` signature via ``_sample``.
+
+**The bundled dimensions do not run it.** Passing coordinates as a tuple means an
+allocation per octave, and the attribute lookups repeat on every layer;
+``FractalPerlinNoise{1,2,3}D`` each write their own loop. ``_fractal`` stays as
+the extension point and as the specification the unrolled loops are tested
+against.
 """
 
 from abc import ABC, abstractmethod
@@ -52,4 +58,11 @@ class FractalNoiseGenerator(ABC):
 
     @abstractmethod
     def _sample(self, *coords: float) -> float:
-        """Sample the wrapped source generator at the given coordinates."""
+        """Sample the wrapped source generator at the given coordinates.
+
+        **Feeds the generic ``_fractal`` only.** ``noise`` stacks its own
+        octaves, so overriding this method does *not* change what ``noise``
+        returns. To stack a different source, derive
+        :class:`FractalNoiseGenerator` directly and implement ``noise``
+        alongside ``_sample``.
+        """

@@ -7,6 +7,16 @@ table over the coordinates, every corner of the surrounding hypercube
 contributes a gradient dot product, and the contributions are combined by a
 pairwise lerp reduction along each axis. Subclasses only provide their
 dimension-specific gradient set via ``_gradient``.
+
+**The bundled dimensions do not run that engine.** It expresses the algorithm
+faithfully and pays for it: coordinates, corner offsets and every intermediate
+reduction travel in lists, which is where most of a call goes.
+``PerlinNoise{1,2,3}D`` each unroll their own octave in scalars instead.
+
+``_octave`` stays for two reasons, and both matter: it is the **extension point**
+a new dimension or a new gradient set builds on, and it is the **executable
+specification** the unrolled versions are tested against — same operations, same
+order, same bits. See ``tests/test_octave_agreement.py``.
 """
 
 import math
@@ -71,6 +81,19 @@ class PerlinNoise(NoiseGenerator):
         value = values[0] * self._NORMALIZATION
         return max(-1.0, min(1.0, value))
 
+    def _scaled(self, raw: float) -> float:
+        """Scale a raw octave to ``[-1, 1]`` and clamp it to the contract.
+
+        Shared so every dimension ends its computation the same way.
+        """
+        return max(-1.0, min(1.0, raw * self._NORMALIZATION))
+
     @abstractmethod
     def _gradient(self, h: int, displacement: list[float]) -> float:
-        """Dot product of the hashed gradient with the corner displacement."""
+        """Dot product of the hashed gradient with the corner displacement.
+
+        **Feeds the generic ``_octave`` only.** ``noise`` unrolls its own octave
+        and inlines this dot product, so overriding this method does *not*
+        change what ``noise`` returns. To bring a different gradient set, derive
+        :class:`PerlinNoise` directly and implement ``noise`` alongside it.
+        """

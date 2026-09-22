@@ -2,6 +2,7 @@
 
 import math
 
+from .._interpolation import fade, lerp
 from ..fractal_noise_generator import FractalNoiseGenerator
 from ..sampling import sample_grid
 from ._base import PerlinNoise
@@ -9,7 +10,7 @@ from ._base import PerlinNoise
 _UNIT = 1.0 / math.sqrt(2)
 
 # 8 gradient directions, indexed with ``h & 7``.
-_GRADIENTS = (
+_VECTORS = (
     (_UNIT, _UNIT),
     (-_UNIT, _UNIT),
     (_UNIT, -_UNIT),
@@ -20,6 +21,15 @@ _GRADIENTS = (
     (-1.0, 0.0),
 )
 
+#: The same table, flattened: ``_GRADIENTS[(h & 7) * 2 + axis]``.
+_GRADIENTS = tuple(component for vector in _VECTORS for component in vector)
+
+
+def _gradient(h: int, x: float, y: float) -> float:
+    """Dot product of the hashed gradient with the corner displacement."""
+    i = (h & 7) * 2
+    return x * _GRADIENTS[i] + y * _GRADIENTS[i + 1]
+
 
 class PerlinNoise2D(PerlinNoise):
     """2D Perlin noise generator (single octave)."""
@@ -29,10 +39,46 @@ class PerlinNoise2D(PerlinNoise):
 
     def noise(self, x: float, y: float) -> float:
         """Return a single octave of 2D Perlin noise at ``(x, y)`` in ``[-1, 1]``."""
-        return self._octave(x, y)
+        p = self._permutation
+
+        floor_x = math.floor(x)
+        floor_y = math.floor(y)
+
+        # Displacements from the low corner, and from the high one a unit away.
+        low_x = x - floor_x
+        low_y = y - floor_y
+        high_x = low_x - 1
+        high_y = low_y - 1
+
+        u = fade(low_x)
+        v = fade(low_y)
+
+        x0 = floor_x & 255
+        y0 = floor_y & 255
+        x1 = (x0 + 1) & 255
+        y1 = (y0 + 1) & 255
+
+        # The permutation folds one axis at a time, so the prefixes are shared.
+        px0 = p[x0]
+        px1 = p[x1]
+
+        # Interpolate along x, then y — the reduction order of the generic engine.
+        y0_row = lerp(
+            _gradient(p[p[px0 + y0]], low_x, low_y),
+            _gradient(p[p[px1 + y0]], high_x, low_y),
+            u,
+        )
+        y1_row = lerp(
+            _gradient(p[p[px0 + y1]], low_x, high_y),
+            _gradient(p[p[px1 + y1]], high_x, high_y),
+            u,
+        )
+
+        return self._scaled(lerp(y0_row, y1_row, v))
 
     def _gradient(self, h: int, displacement: list[float]) -> float:
-        gx, gy = _GRADIENTS[h & 7]
+        # Feeds the generic ``_octave`` only — see :class:`PerlinNoise`.
+        gx, gy = _VECTORS[h & 7]
         return displacement[0] * gx + displacement[1] * gy
 
 
@@ -92,11 +138,24 @@ class FractalPerlinNoise2D(FractalNoiseGenerator):
         self._source = PerlinNoise2D(seed=seed)
 
     def _sample(self, *coords: float) -> float:
+        # Feeds the generic ``_fractal`` only — see :class:`FractalNoiseGenerator`.
         return self._source.noise(*coords)
 
     def noise(self, x: float, y: float) -> float:
         """Return fractal 2D noise at ``(x, y)`` in the ``[-1, 1]`` interval."""
-        return self._fractal(x, y)
+        value = 0.0
+        max_value = 0.0
+        amplitude = 1.0
+        frequency = self._frequency
+        source = self._source.noise
+
+        for _ in range(self._octaves):
+            value += source(x * frequency, y * frequency) * amplitude
+            max_value += amplitude
+            amplitude *= self._persistence
+            frequency *= self._lacunarity
+
+        return value / max_value
 
 
 def fractal_perlin_2d(
