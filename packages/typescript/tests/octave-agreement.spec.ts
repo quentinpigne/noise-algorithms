@@ -43,6 +43,16 @@ class Generic3D extends PerlinNoise3D {
     return this.octave([x, y, z]);
   }
 }
+class GenericFractal1D extends FractalPerlinNoise1D {
+  generic(x: number): number {
+    return this.fractal([x]);
+  }
+}
+class GenericFractal2D extends FractalPerlinNoise2D {
+  generic(x: number, y: number): number {
+    return this.fractal([x, y]);
+  }
+}
 class GenericFractal3D extends FractalPerlinNoise3D {
   generic(x: number, y: number, z: number): number {
     return this.fractal([x, y, z]);
@@ -86,21 +96,30 @@ describe("unrolled octave agrees with the generic engine", () => {
     });
   }
 
+  // Every dimension unrolls its own stacking loop, so every dimension is pinned.
   it("matches for stacked octaves, whatever the fractal settings", () => {
     // Odd counts and non-default lacunarity: the loop must accumulate in the
     // same order, not just reach the same total.
     for (const octaves of [1, 2, 3, 7]) {
       for (const lacunarity of [2, 1.87]) {
-        const fractal = new GenericFractal3D({
+        const settings = {
           seed: "agreement",
           octaves,
           lacunarity,
           persistence: 0.43,
           frequency: 0.017,
-        });
+        };
+        const one = new GenericFractal1D(settings);
+        const two = new GenericFractal2D(settings);
+        const three = new GenericFractal3D(settings);
+
         for (const x of coordinates().slice(0, 20)) {
-          expect(bits(fractal.noise(x, x * 0.3, x * 0.7))).toBe(
-            bits(fractal.generic(x, x * 0.3, x * 0.7)),
+          expect(bits(one.noise(x))).toBe(bits(one.generic(x)));
+          expect(bits(two.noise(x, x * 0.3))).toBe(
+            bits(two.generic(x, x * 0.3)),
+          );
+          expect(bits(three.noise(x, x * 0.3, x * 0.7))).toBe(
+            bits(three.generic(x, x * 0.3, x * 0.7)),
           );
         }
       }
