@@ -2,6 +2,8 @@ import { NoiseGenerator1D } from "../interfaces/noise-generator-1d";
 import { NoiseGeneratorOptions } from "../noise-generator";
 import { sampleLine, LineRegion } from "../sampling";
 
+import { fade, lerp } from "../utils/interpolation";
+
 import { PerlinNoise } from "./perlin-noise";
 
 export class PerlinNoise1D extends PerlinNoise implements NoiseGenerator1D {
@@ -12,6 +14,11 @@ export class PerlinNoise1D extends PerlinNoise implements NoiseGenerator1D {
    * @param hash hash of the position
    * @param displacement [x] displacement from the corner
    * @returns gradient value
+   *
+   * **Feeds the generic `octave` only.** `noise` unrolls its own octave and
+   * inlines this dot product, so overriding this method does *not* change what
+   * `noise` returns. To bring a different gradient set, extend
+   * {@link PerlinNoise} directly and implement `noise` alongside it.
    */
   protected gradient(hash: number, displacement: number[]): number {
     const [x] = displacement;
@@ -24,7 +31,24 @@ export class PerlinNoise1D extends PerlinNoise implements NoiseGenerator1D {
    * @returns value in interval [-1, 1]
    */
   noise(x: number): number {
-    return this.octave([x]);
+    const p = this.permutation;
+
+    const floorX = Math.floor(x);
+    const lowX = x - floorX;
+    const highX = lowX - 1;
+    const u = fade(lowX);
+
+    const x0 = floorX & 255;
+    const x1 = (x0 + 1) & 255;
+
+    // In one dimension the gradient is a sign: the hash keeps or mirrors the
+    // displacement.
+    const hash0 = p[p[x0]];
+    const hash1 = p[p[x1]];
+    const low = (hash0 & 1) === 0 ? lowX : -lowX;
+    const high = (hash1 & 1) === 0 ? highX : -highX;
+
+    return this.scaled(lerp(low, high, u));
   }
 }
 

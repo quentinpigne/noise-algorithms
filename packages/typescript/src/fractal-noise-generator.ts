@@ -15,9 +15,17 @@ export interface FractalOptions {
  * Fractal noise is not a noise algorithm in itself but a *technique* for
  * stacking octaves of a source noise: each octave samples the source at an
  * increasing frequency and decreasing amplitude, and the contributions are
+ * summed and normalised back into the `[-1, 1]` interval.
+ *
  * summed and normalised back into the `[-1, 1]` interval. This dimension- and
  * source-agnostic engine lives here; subclasses bind a concrete source and
  * adapt its `noise(...)` signature via `sample`.
+ *
+ * **The bundled dimensions do not run it.** Passing coordinates as an array
+ * means a `map` allocation per octave, and four octaves of 3D noise spent more
+ * time allocating than sampling; `FractalPerlinNoise{1,2,3}D` each write their
+ * own loop. `fractal` stays as the extension point and as the specification the
+ * unrolled loops are tested against.
  */
 export abstract class FractalNoiseGenerator {
   protected octaves: number;

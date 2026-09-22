@@ -28,9 +28,16 @@ from noise_algorithms import (
 # Cross-language conformance vectors: these exact values are also asserted in
 # the TypeScript suite (perlin-noise.spec.ts). The same seed must produce the
 # same field in every package — keep the two lists identical.
-SNAPSHOT_1D = -0.02143353418166667
-SNAPSHOT_2D = 2.338095654778e-05
-SNAPSHOT_3D = 0.021326036454289054
+#
+# They are asserted with `==`, not a tolerance. The invariant these vectors guard
+# is bit-for-bit identity, and a tolerance cannot express it: at `abs=1e-9` a
+# value may drift by seven orders of magnitude more than an ULP and still pass,
+# so the assertion would agree while the field quietly differed. Each literal is
+# the shortest decimal that round-trips to its f64, and parses to the same bits
+# in Python and in JavaScript — verified against the raw bytes.
+SNAPSHOT_1D = -0.02143353418166667  # bf95f2ac21644eb3
+SNAPSHOT_2D = 2.338095654778e-5  # 3ef88447197c25d4
+SNAPSHOT_3D = 0.021326036454289054  # 3f95d67e147f7673
 
 
 def test_fractal_default_parameters():
@@ -133,22 +140,19 @@ def test_implementations_extend_the_abstract_concepts():
 
 
 def test_regression_snapshots():
-    assert fractal_perlin_1d(0.5, seed=42) == pytest.approx(SNAPSHOT_1D, abs=1e-9)
-    assert fractal_perlin_2d(0.5, 0.5, seed=42) == pytest.approx(SNAPSHOT_2D, abs=1e-9)
-    assert fractal_perlin_3d(0.5, 0.5, 0.5, seed=42) == pytest.approx(
-        SNAPSHOT_3D, abs=1e-9
-    )
+    assert fractal_perlin_1d(0.5, seed=42) == SNAPSHOT_1D
+    assert fractal_perlin_2d(0.5, 0.5, seed=42) == SNAPSHOT_2D
+    assert fractal_perlin_3d(0.5, 0.5, 0.5, seed=42) == SNAPSHOT_3D
 
 
 # Cross-language conformance vector: also asserted in the TypeScript suite. A
 # string seed is hashed (FNV-1a) to an integer, identically in every package.
-STRING_SEED_SNAPSHOT = -0.01500367218449442
+# Exact, for the same reason as the vectors above.
+STRING_SEED_SNAPSHOT = -0.01500367218449442  # bf8eba3ecad18713
 
 
 def test_string_seed_hashes_to_a_deterministic_field():
-    assert fractal_perlin_2d(0.5, 0.5, seed="hello") == pytest.approx(
-        STRING_SEED_SNAPSHOT, abs=1e-9
-    )
+    assert fractal_perlin_2d(0.5, 0.5, seed="hello") == STRING_SEED_SNAPSHOT
 
 
 def test_different_string_seeds_differ():

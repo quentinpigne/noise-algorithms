@@ -13,8 +13,19 @@ import { xorshift32 } from "../utils/seeded-random";
  * The base implements a dimension-agnostic engine: hashing folds the
  * permutation table over the coordinates, every corner of the surrounding
  * hypercube contributes a gradient dot product, and the contributions are
- * combined by a pairwise lerp reduction along each axis. Subclasses only
- * provide their dimension-specific gradient set via `gradient`.
+ * combined by a pairwise lerp reduction along each axis. Subclasses provide
+ * their dimension-specific gradient set via `gradient`.
+ *
+ * **The bundled dimensions do not run that engine.** It expresses the algorithm
+ * faithfully and pays for it — coordinates, corner offsets and intermediate
+ * reductions all travel in arrays, sixteen allocations for one 3D call, eleven
+ * times the cost of the arithmetic it performs. `PerlinNoise{1,2,3}D` each
+ * unroll their own octave in scalars instead.
+ *
+ * `octave` stays for two reasons, and both matter: it is the **extension point**
+ * a new dimension or a new gradient set builds on, and it is the **executable
+ * specification** the unrolled versions are tested against — same operations,
+ * same order, same bits. See `octave-agreement.spec.ts`.
  */
 export abstract class PerlinNoise extends NoiseGenerator {
   protected permutation!: number[];
@@ -88,8 +99,16 @@ export abstract class PerlinNoise extends NoiseGenerator {
   }
 
   /**
+   * Scale a raw octave to `[-1, 1]` and clamp it to the documented contract.
+   * Shared so every dimension ends its computation the same way.
+   */
+  protected scaled(raw: number): number {
+    return Math.max(-1, Math.min(1, raw * this.normalization));
+  }
+
+  /**
    * Dot product of the hashed gradient with the corner displacement.
-   * Implemented per dimension.
+   * Implemented per dimension, and used by the generic `octave`.
    */
   protected abstract gradient(hash: number, displacement: number[]): number;
 

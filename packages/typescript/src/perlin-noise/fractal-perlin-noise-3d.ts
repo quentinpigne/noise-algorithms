@@ -21,6 +21,14 @@ export class FractalPerlinNoise3D
     this.source = new PerlinNoise3D({ seed });
   }
 
+  /**
+   * Bridges the generic `fractal` engine to the source's signature.
+   *
+   * **Feeds the generic `fractal` only.** `noise` stacks its own octaves, so
+   * overriding this method does *not* change what `noise` returns. To stack a
+   * different source, extend {@link FractalNoiseGenerator} directly and
+   * implement `noise` alongside `sample`.
+   */
   protected sample(coords: number[]): number {
     return this.source.noise(coords[0], coords[1], coords[2]);
   }
@@ -33,7 +41,21 @@ export class FractalPerlinNoise3D
    * @returns value in interval [-1, 1]
    */
   noise(x: number, y: number, z: number): number {
-    return this.fractal([x, y, z]);
+    let value = 0;
+    let maxValue = 0;
+    let amplitude = 1;
+    let frequency = this.frequency;
+
+    for (let i = 0; i < this.octaves; i++) {
+      value +=
+        this.source.noise(x * frequency, y * frequency, z * frequency) *
+        amplitude;
+      maxValue += amplitude;
+      amplitude *= this.persistence;
+      frequency *= this.lacunarity;
+    }
+
+    return value / maxValue;
   }
 }
 

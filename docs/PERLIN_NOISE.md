@@ -311,8 +311,27 @@ source; the rest are the fractal layer's parameters.
 
 The implementation mirrors the structure above. The **engine is
 dimension-agnostic** and lives in a shared base class; each dimension only
-supplies its **gradient strategy**. The Python and TypeScript packages share the
-same design.
+supplies its **gradient strategy**. That form is the one this section describes,
+because it is the one that reads like the maths — and it is the form both
+packages still ship, still export and still test against.
+
+**Neither package runs it on the hot path.** The generic engine expresses §7
+faithfully and pays for it: coordinates, corner offsets and the intermediate
+reductions all travel in arrays, which is sixteen allocations per 3D call.
+Measured, that cost eleven times the arithmetic it performed in TypeScript —
+2 814 ns per call against 248 ns once written out in scalars, and 11 701 ns
+against 1 029 ns for four fractal octaves. Python pays less for the allocations
+and more for everything else, so the same rewrite buys a little over three times
+there: 15 310 ns against 4 656 ns in 3D, 71 779 ns against 20 410 ns for four
+octaves.
+
+The unrolled code performs **the same operations in the same order**, so the
+field is unchanged bit-for-bit; the conformance vectors, the image snapshots and
+a dedicated agreement test in each language are what prove it. The generic engine
+is still there — it remains the extension point for a new dimension, and it is
+the oracle the unrolled code is checked against. Read §9.2 for the algorithm, and
+either package's `perlin_{1,2,3}d` / `perlin-noise-{1,2,3}d` for the shape it
+takes when a voxel world asks for two thousand samples per chunk.
 
 ### 9.1 File map (Python)
 
@@ -464,7 +483,9 @@ be added without breaking existing call sites.
 > `_seeded_random.py`) driving a Fisher-Yates shuffle with an integer-modulo
 > index. It uses only masked 32-bit integer ops, so it is bit-identical in every
 > language: **the same seed produces the same field** in Python and TypeScript.
-> A set of shared conformance vectors in both test suites guards against drift.
+> A set of shared conformance vectors in both test suites guards against drift,
+> asserted exactly rather than within a tolerance — the same decimal literals,
+> round-tripping to the same f64 in each language.
 > The default seed is `0` in both. A **string** seed is first hashed to a uint32
 > with **FNV-1a** over its UTF-8 bytes (same module, also bit-identical), so
 > named seeds like `"my-world"` work and match across languages.

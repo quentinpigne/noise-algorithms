@@ -20,10 +20,12 @@ npm run format            # Prettier (write); format:check in CI
   concept classes (+ their options interfaces).
 - `src/interfaces/` — dimension interfaces (type-only): `NoiseGenerator{1,2,3}D`,
   `FractalNoiseGenerator{1,2,3}D`.
-- `src/perlin-noise/` — Perlin: `perlin-noise.ts` (abstract engine, `octave`),
-  `perlin-noise-{1,2,3}d.ts` (classes + `perlin{D}` fns),
-  `fractal-perlin-noise-{1,2,3}d.ts` (classes + `fractalPerlin{D}` + region
-  one-shots). The per-dim `normalization` constant lives on each subclass.
+- `src/perlin-noise/` — Perlin: `perlin-noise.ts` (abstract base: seeded
+  permutation, generic `octave`, `scaled`), `perlin-noise-{1,2,3}d.ts` (classes
+  - `perlin{D}` fns; each **unrolls its own octave** and is pinned to the generic
+    one by `tests/octave-agreement.spec.ts` — see the root `CLAUDE.md`),
+    `fractal-perlin-noise-{1,2,3}d.ts` (classes + `fractalPerlin{D}` + region
+    one-shots). The per-dim `normalization` constant lives on each subclass.
 - `src/sampling/` — `sampleLine`/`sampleGrid`/`sampleVolume` (generic).
 - `src/output-range.ts` — `toUnitRange`.
 - `src/utils/` — **internal, never exported**: `seeded-random.ts` (`xorshift32`,
@@ -46,5 +48,14 @@ string` (string hashed via `fnv1a32`).
 - Integration tests compare against committed PNGs in `tests/snapshots/`. If output
   legitimately changes, refresh with `UPDATE_SNAPSHOTS=1 npm run test:integration`
   and eyeball the result.
+- `gradient` and `sample` on the concrete dimensions **feed `octave` / `fractal`
+  only**; `noise` inlines them. Overriding either on `PerlinNoise3D` or
+  `FractalPerlinNoise3D` is silently ignored — extend the abstract `PerlinNoise` /
+  `FractalNoiseGenerator` instead.
 - Any change to the noise math must stay bit-identical with Python — see root
-  `CLAUDE.md`, update the shared golden vectors in `tests/perlin-noise.spec.ts`.
+  `CLAUDE.md`, update the shared golden vectors in `tests/perlin-noise.spec.ts`,
+  and keep `tests/octave-agreement.spec.ts` green.
+- The conformance vectors assert with `toBe`, never `toBeCloseTo`: the invariant
+  is bit-for-bit, and a tolerance cannot express it. Each literal is the shortest
+  decimal that round-trips to its f64 and parses identically in both languages —
+  its hex bits are in the comment beside it. Regenerate with `String(value)`.

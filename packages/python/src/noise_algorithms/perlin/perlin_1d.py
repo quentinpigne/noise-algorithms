@@ -1,5 +1,8 @@
 """1D Perlin noise."""
 
+import math
+
+from .._interpolation import fade, lerp
 from ..fractal_noise_generator import FractalNoiseGenerator
 from ..sampling import sample_line
 from ._base import PerlinNoise
@@ -13,10 +16,28 @@ class PerlinNoise1D(PerlinNoise):
 
     def noise(self, x: float) -> float:
         """Return a single octave of 1D Perlin noise at ``x`` in ``[-1, 1]``."""
-        return self._octave(x)
+        p = self._permutation
+
+        floor_x = math.floor(x)
+        low_x = x - floor_x
+        high_x = low_x - 1
+        u = fade(low_x)
+
+        x0 = floor_x & 255
+        x1 = (x0 + 1) & 255
+
+        # In one dimension the gradient is a sign: the hash keeps or mirrors
+        # the displacement.
+        hash_0 = p[p[x0]]
+        hash_1 = p[p[x1]]
+        low = low_x if (hash_0 & 1) == 0 else -low_x
+        high = high_x if (hash_1 & 1) == 0 else -high_x
+
+        return self._scaled(lerp(low, high, u))
 
     def _gradient(self, h: int, displacement: list[float]) -> float:
         # 1D gradient: keep or mirror the displacement depending on the hash.
+        # Feeds the generic ``_octave`` only — see :class:`PerlinNoise`.
         d = displacement[0]
         return d if (h & 1) == 0 else -d
 
@@ -68,11 +89,24 @@ class FractalPerlinNoise1D(FractalNoiseGenerator):
         self._source = PerlinNoise1D(seed=seed)
 
     def _sample(self, *coords: float) -> float:
+        # Feeds the generic ``_fractal`` only — see :class:`FractalNoiseGenerator`.
         return self._source.noise(*coords)
 
     def noise(self, x: float) -> float:
         """Return fractal 1D noise at ``x`` in the ``[-1, 1]`` interval."""
-        return self._fractal(x)
+        value = 0.0
+        max_value = 0.0
+        amplitude = 1.0
+        frequency = self._frequency
+        source = self._source.noise
+
+        for _ in range(self._octaves):
+            value += source(x * frequency) * amplitude
+            max_value += amplitude
+            amplitude *= self._persistence
+            frequency *= self._lacunarity
+
+        return value / max_value
 
 
 def fractal_perlin_1d(
