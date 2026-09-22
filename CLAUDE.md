@@ -30,18 +30,25 @@ ops and standard IEEE-754 `f64`):
   normative: TypeScript unrolls both per dimension for speed (see below), Python
   keeps the generic loops, and the two agree bit-for-bit.
 
-**Unrolled in TypeScript.** `packages/typescript` writes the octave and the
-fractal loop out per dimension rather than driving them with the dimension-
-agnostic engine. A generic engine carries coordinates, corner offsets and
-intermediate reductions in arrays — sixteen allocations per 3D call — which cost
-eleven times the arithmetic it performed. Same operations, same order, same
-values; only the allocations are gone.
+**Unrolled in both packages.** Each writes the octave and the fractal loop out
+per dimension rather than driving them with the dimension-agnostic engine. A
+generic engine carries coordinates, corner offsets and intermediate reductions in
+arrays — sixteen allocations per 3D call — which cost eleven times the arithmetic
+it performed in TypeScript and a little over three times in Python. Same
+operations, same order, same values; only the allocations are gone.
 
 **The generic engines stay**, in both languages: they are the extension point a
-new dimension or gradient set builds on, and in TypeScript they are also the
-executable specification — `octave-agreement.spec.ts` pins the unrolled path to
-the generic one **bit-for-bit**, so the two cannot drift. Two implementations of
-the same maths is precisely what this invariant cannot survive unguarded.
+new dimension or gradient set builds on, and they are also the executable
+specification — `octave-agreement.spec.ts` and `test_octave_agreement.py` pin the
+unrolled path to the generic one **bit-for-bit**, so the two cannot drift. Two
+implementations of the same maths is precisely what this invariant cannot survive
+unguarded, and there are now four.
+
+**`gradient` / `_gradient` and `sample` / `_sample` on the bundled dimensions no
+longer feed `noise`** — they feed the generic engine, which is to say the
+agreement tests. Overriding them on `PerlinNoise3D` or `FractalPerlinNoise3D` is
+silently ignored. A new gradient set derives the abstract `PerlinNoise` and
+implements `noise` alongside it.
 
 If you touch ANY of the above, you must: mirror it in **both** packages, keep the
 op-order identical (f64 determinism), regenerate the golden vectors + integration

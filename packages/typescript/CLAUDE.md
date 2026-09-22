@@ -48,5 +48,11 @@ string` (string hashed via `fnv1a32`).
 - Integration tests compare against committed PNGs in `tests/snapshots/`. If output
   legitimately changes, refresh with `UPDATE_SNAPSHOTS=1 npm run test:integration`
   and eyeball the result.
+- `gradient` and `sample` on the concrete dimensions **feed `octave` / `fractal`
+  only**; `noise` inlines them. Overriding either on `PerlinNoise3D` or
+  `FractalPerlinNoise3D` is silently ignored — extend the abstract `PerlinNoise` /
+  `FractalNoiseGenerator` instead.
 - Any change to the noise math must stay bit-identical with Python — see root
-  `CLAUDE.md`, update the shared golden vectors in `tests/perlin-noise.spec.ts`.
+  `CLAUDE.md`, update the shared golden vectors in `tests/perlin-noise.spec.ts`,
+  and keep `tests/octave-agreement.spec.ts` green (it compares raw f64 bits, so it
+  is strictly tighter than the conformance vectors, which use `toBeCloseTo`).

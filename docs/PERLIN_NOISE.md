@@ -309,22 +309,29 @@ source; the rest are the fractal layer's parameters.
 
 ## 9. How this library implements it
 
-The implementation mirrors the structure above. In Python the **engine is
+The implementation mirrors the structure above. The **engine is
 dimension-agnostic** and lives in a shared base class; each dimension only
 supplies its **gradient strategy**. That form is the one this section describes,
-because it is the one that reads like the maths.
+because it is the one that reads like the maths — and it is the form both
+packages still ship, still export and still test against.
 
-**TypeScript unrolls it.** The generic engine expresses §7 faithfully, and pays
-for it: coordinates, corner offsets and the intermediate reductions all travel in
-arrays, which is sixteen allocations per 3D call. Measured, that cost eleven
-times the arithmetic it performed — 2 814 ns per call against 248 ns once written
-out in scalars, and 11 701 ns against 1 029 ns for four fractal octaves. The
-unrolled code performs **the same operations in the same order**, so the field is
-unchanged bit-for-bit; the golden vectors, the image snapshots and a dedicated
-agreement test are what prove it. The generic engine is still there — it remains
-the extension point for a new dimension, and it is the oracle the unrolled code
-is checked against. Read the Python below for the algorithm, the TypeScript for
-the shape it takes when a voxel world asks for two thousand samples per chunk.
+**Neither package runs it on the hot path.** The generic engine expresses §7
+faithfully and pays for it: coordinates, corner offsets and the intermediate
+reductions all travel in arrays, which is sixteen allocations per 3D call.
+Measured, that cost eleven times the arithmetic it performed in TypeScript —
+2 814 ns per call against 248 ns once written out in scalars, and 11 701 ns
+against 1 029 ns for four fractal octaves. Python pays less for the allocations
+and more for everything else, so the same rewrite buys a little over three times
+there: 15 310 ns against 4 656 ns in 3D, 71 779 ns against 20 410 ns for four
+octaves.
+
+The unrolled code performs **the same operations in the same order**, so the
+field is unchanged bit-for-bit; the conformance vectors, the image snapshots and
+a dedicated agreement test in each language are what prove it. The generic engine
+is still there — it remains the extension point for a new dimension, and it is
+the oracle the unrolled code is checked against. Read §9.2 for the algorithm, and
+either package's `perlin_{1,2,3}d` / `perlin-noise-{1,2,3}d` for the shape it
+takes when a voxel world asks for two thousand samples per chunk.
 
 ### 9.1 File map (Python)
 
