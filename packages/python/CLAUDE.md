@@ -39,9 +39,12 @@ Coverage (ephemeral): `uv run --with pytest-cov pytest -m "not integration" --co
   `str.bytes` directly.
 - `NoiseGenerator(ABC)` has no abstract method (`noise` is dimension-specific, on
   the Protocols) → it carries a `# noqa: B024`. Keep it.
-- **Two version sources**: `pyproject.toml` and `__init__.py:__version__`. The
-  release CI sets the pyproject version from the tag but NOT `__version__` — bump
-  `__version__` manually to match.
+- **Three version sources**: `pyproject.toml`, `__init__.py:__version__`, and the
+  `noise-algorithms` entry in `uv.lock`. Release CI sets only the pyproject
+  version, from the tag; bump the other two by hand — `__version__` by editing it,
+  the lock by running `uv lock`. Nothing runs `uv sync --locked`, so a stale lock
+  fails no build: it just sits wrong in the repo and dirties the tree on the next
+  `uv sync`.
 - Integration tests build a wheel and render images in an isolated subprocess,
   comparing to `tests/snapshots/`. Refresh with `UPDATE_SNAPSHOTS=1 uv run pytest`.
 - `_gradient` and `_sample` on the concrete dimensions **feed `_octave` /
