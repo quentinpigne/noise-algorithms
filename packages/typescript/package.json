@@ -1,6 +1,6 @@
 {
   "name": "@quentinpigne/noise-algorithms",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A collection of noise generation algorithms (Perlin, ...) in TypeScript",
   "keywords": [
     "noise",

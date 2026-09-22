@@ -1,6 +1,6 @@
 [project]
 name = "noise-algorithms"
-version = "1.0.0"
+version = "1.0.1"
 description = "A collection of noise generation algorithms (Perlin, ...) in pure Python"
 readme = "README.md"
 requires-python = ">=3.10"
