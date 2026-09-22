@@ -21,7 +21,14 @@ export class FractalPerlinNoise2D
     this.source = new PerlinNoise2D({ seed });
   }
 
-  /** Bridges the generic `fractal` engine to the source's signature. */
+  /**
+   * Bridges the generic `fractal` engine to the source's signature.
+   *
+   * **Feeds the generic `fractal` only.** `noise` stacks its own octaves, so
+   * overriding this method does *not* change what `noise` returns. To stack a
+   * different source, extend {@link FractalNoiseGenerator} directly and
+   * implement `noise` alongside `sample`.
+   */
   protected sample(coords: number[]): number {
     return this.source.noise(coords[0], coords[1]);
   }

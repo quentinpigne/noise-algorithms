@@ -49,6 +49,11 @@ export class PerlinNoise3D extends PerlinNoise implements NoiseGenerator3D {
    * @param hash hash of the position
    * @param displacement [x, y, z] displacement from the corner
    * @returns gradient value
+   *
+   * **Feeds the generic `octave` only.** `noise` unrolls its own octave and
+   * inlines this dot product, so overriding this method does *not* change what
+   * `noise` returns. To bring a different gradient set, extend
+   * {@link PerlinNoise} directly and implement `noise` alongside it.
    */
   protected gradient(hash: number, displacement: number[]): number {
     const [x, y, z] = displacement;
