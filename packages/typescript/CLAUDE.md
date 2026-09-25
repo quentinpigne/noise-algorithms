@@ -18,6 +18,8 @@ npm run format            # Prettier (write); format:check in CI
 
 - `src/noise-generator.ts`, `src/fractal-noise-generator.ts` — the two abstract
   concept classes (+ their options interfaces).
+- `src/octave-sources.ts` — internal: the source and offset of each fractal
+  octave, shared or independent. Algorithm-agnostic, next to the fractal engine.
 - `src/interfaces/` — dimension interfaces (type-only): `NoiseGenerator{1,2,3}D`,
   `FractalNoiseGenerator{1,2,3}D`.
 - `src/perlin-noise/` — Perlin: `perlin-noise.ts` (abstract base: seeded

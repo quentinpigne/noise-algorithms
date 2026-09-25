@@ -20,7 +20,14 @@ export abstract class NoiseGenerator {
   protected seed: number;
 
   constructor(options: NoiseGeneratorOptions = {}) {
-    const seed = options.seed ?? 0;
-    this.seed = typeof seed === "string" ? fnv1a32(seed) : seed;
+    this.seed = resolveSeed(options.seed);
   }
+}
+
+/**
+ * The integer a seed option stands for: a string is hashed, a missing seed is
+ * `0`. Internal — shared by the generators and by the octave sources.
+ */
+export function resolveSeed(seed: number | string = 0): number {
+  return typeof seed === "string" ? fnv1a32(seed) : seed;
 }

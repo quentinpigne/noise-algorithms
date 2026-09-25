@@ -1,5 +1,8 @@
 export interface FractalOptions {
-  /** Number of noise layers (octaves) summed together. Defaults to `4`. */
+  /**
+   * Number of noise layers (octaves) summed together. Defaults to `4`, or to
+   * the length of `amplitudes`, which cannot be given with it.
+   */
   octaves?: number;
   /** Frequency multiplier between successive octaves. Defaults to `2`. */
   lacunarity?: number;
@@ -7,6 +10,24 @@ export interface FractalOptions {
   persistence?: number;
   /** Base frequency applied to the coordinates of the first octave. Defaults to `0.01`. */
   frequency?: number;
+  /**
+   * Weight of each octave, on top of the persistence curve: octave `i`
+   * contributes `amplitudes[i] × persistence^i`. Its length is the number of
+   * octaves, so it cannot be given with `octaves`; a zero skips its octave. The
+   * weights must be finite, and at least one non-zero. Defaults to a weight of
+   * `1` for every octave — plain fBm.
+   */
+  amplitudes?: readonly number[];
+  /**
+   * Give every octave its own permutation and its own coordinate offset, drawn
+   * from the seed, instead of sampling one source at every frequency.
+   *
+   * One shared source repeats its lattice at every octave: at the origin, and
+   * wherever the octaves' lattices line up, they all cross zero together.
+   * Independent octaves decorrelate the layers, which is what a field meant to
+   * be read against thresholds wants. Defaults to `false`.
+   */
+  independentOctaves?: boolean;
 }
 
 /**
@@ -32,12 +53,42 @@ export abstract class FractalNoiseGenerator {
   protected lacunarity: number;
   protected persistence: number;
   protected frequency: number;
+  /** One weight per octave; all `1` unless `amplitudes` was given. */
+  protected weights: readonly number[];
+  protected independentOctaves: boolean;
+  /**
+   * The frequency and amplitude of each octave, and the sum the stacked value
+   * is divided by. They do not depend on the coordinates, so the unrolled loops
+   * read them instead of recomputing them on every call; they are built with
+   * the operations of the generic `fractal` loop, in its order, so they hold
+   * the same bits.
+   */
+  protected octaveFrequencies: Float64Array;
+  protected octaveAmplitudes: Float64Array;
+  protected amplitudeSum: number;
 
   constructor(options: FractalOptions = {}) {
-    this.octaves = options.octaves ?? 4;
+    this.weights = weightsOf(options);
+    this.octaves = this.weights.length;
     this.lacunarity = options.lacunarity ?? 2;
     this.persistence = options.persistence ?? 0.5;
     this.frequency = options.frequency ?? 0.01;
+    this.independentOctaves = options.independentOctaves ?? false;
+
+    this.octaveFrequencies = new Float64Array(this.octaves);
+    this.octaveAmplitudes = new Float64Array(this.octaves);
+    let amplitude = 1;
+    let frequency = this.frequency;
+    let amplitudeSum = 0;
+    for (let i = 0; i < this.octaves; i++) {
+      this.octaveFrequencies[i] = frequency;
+      this.octaveAmplitudes[i] = amplitude;
+      const weight = this.weights[i];
+      if (weight !== 0) amplitudeSum += amplitude * Math.abs(weight);
+      amplitude *= this.persistence;
+      frequency *= this.lacunarity;
+    }
+    this.amplitudeSum = amplitudeSum;
   }
 
   /**
@@ -53,8 +104,17 @@ export abstract class FractalNoiseGenerator {
     let frequency = this.frequency;
 
     for (let i = 0; i < this.octaves; i++) {
-      value += this.sample(coords.map((c) => c * frequency)) * amplitude;
-      maxValue += amplitude;
+      const weight = this.weights[i];
+      if (weight !== 0) {
+        value +=
+          this.sample(
+            coords.map((c) => c * frequency),
+            i,
+          ) *
+          amplitude *
+          weight;
+        maxValue += amplitude * Math.abs(weight);
+      }
       amplitude *= this.persistence;
       frequency *= this.lacunarity;
     }
@@ -63,9 +123,37 @@ export abstract class FractalNoiseGenerator {
   }
 
   /**
-   * Sample the wrapped source generator at the given coordinates.
-   * Implemented per dimension to bridge the generic coordinate array and the
-   * source's `noise(...)` signature.
+   * Sample the wrapped source generator at the given coordinates, for the given
+   * octave. Implemented per dimension to bridge the generic coordinate array and
+   * the source's `noise(...)` signature; with independent octaves, `octave`
+   * selects the source and its offset.
    */
-  protected abstract sample(coords: number[]): number;
+  protected abstract sample(coords: number[], octave: number): number;
+}
+
+/**
+ * The octave weights an options object asks for.
+ *
+ * A weight of `1` is exact in floating point, so plain fBm computes the same
+ * bits with or without this step.
+ */
+function weightsOf(options: FractalOptions): readonly number[] {
+  const { amplitudes, octaves } = options;
+  if (amplitudes === undefined) return new Array<number>(octaves ?? 4).fill(1);
+
+  if (octaves !== undefined) {
+    throw new RangeError(
+      "give octaves or amplitudes, not both: amplitudes sets the number of octaves",
+    );
+  }
+  if (amplitudes.length === 0) {
+    throw new RangeError("amplitudes must name at least one octave");
+  }
+  if (!amplitudes.every((weight) => Number.isFinite(weight))) {
+    throw new RangeError("amplitudes must be finite numbers");
+  }
+  if (amplitudes.every((weight) => weight === 0)) {
+    throw new RangeError("amplitudes must have at least one non-zero weight");
+  }
+  return [...amplitudes];
 }

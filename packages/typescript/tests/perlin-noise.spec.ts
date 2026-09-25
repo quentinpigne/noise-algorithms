@@ -6,6 +6,7 @@ import {
   perlin2D,
   perlin3D,
   FractalPerlinNoise2D,
+  FractalPerlinNoise3D,
   fractalPerlin1D,
   fractalPerlin2D,
   fractalPerlin3D,
@@ -125,6 +126,115 @@ describe("Fractal Perlin noise", () => {
     );
     // A fractal generator is still a noise generator (has noise()).
     expect(new FractalPerlinNoise2D({ seed: 42 }).noise).toBeTypeOf("function");
+  });
+});
+
+describe("Weighted and independent octaves", () => {
+  const INDEPENDENT = {
+    seed: 42,
+    amplitudes: [1, 2, 0, 1],
+    independentOctaves: true,
+    frequency: 0.25,
+  };
+
+  // Cross-language conformance vectors, also asserted in test_perlin.py: the
+  // octave sources are drawn from the seed in a fixed order, and both packages
+  // must draw the same ones.
+  it("should generate independent 1D octaves", () => {
+    // 3faf260910126dc4
+    expect(fractalPerlin1D(0.5, INDEPENDENT)).toBe(0.060837062084114574);
+  });
+
+  it("should generate independent 2D octaves", () => {
+    // 3fd58e9aacade759
+    expect(fractalPerlin2D(0.5, 0.5, INDEPENDENT)).toBe(0.33682886946882246);
+  });
+
+  it("should generate independent 3D octaves", () => {
+    // bf930db1f85f822d
+    expect(fractalPerlin3D(0.5, 0.5, 0.5, INDEPENDENT)).toBe(
+      -0.01860693052720046,
+    );
+  });
+
+  it("should weight shared octaves", () => {
+    // 3fa134caf8bee5d3
+    expect(
+      fractalPerlin2D(0.5, 0.5, {
+        seed: 42,
+        amplitudes: [1, 2, 0, 1],
+        frequency: 0.25,
+      }),
+    ).toBe(0.033605902542557374);
+  });
+
+  it("should not cross zero at the origin with independent octaves", () => {
+    // bfc3b074f0c3e952 — a shared source is zero on its lattice, the origin
+    // first; offset octaves are not.
+    expect(fractalPerlin3D(0, 0, 0, { seed: "monde" })).toBe(0);
+    expect(
+      fractalPerlin3D(0, 0, 0, { seed: "monde", independentOctaves: true }),
+    ).toBe(-0.15382253414265762);
+  });
+
+  it("should keep plain fBm when every weight is one", () => {
+    for (const [x, y] of [
+      [1.5, 2.5],
+      [-7.25, 3.125],
+    ]) {
+      expect(
+        new FractalPerlinNoise2D({ seed: 9, amplitudes: [1, 1, 1] }).noise(
+          x,
+          y,
+        ),
+      ).toBe(new FractalPerlinNoise2D({ seed: 9, octaves: 3 }).noise(x, y));
+    }
+  });
+
+  it("should skip an octave weighted zero", () => {
+    // A zero drops the octave from the sum and from the normalisation alike.
+    expect(
+      new FractalPerlinNoise2D({ seed: 9, amplitudes: [1, 0] }).noise(1.5, 2.5),
+    ).toBe(new FractalPerlinNoise2D({ seed: 9, octaves: 1 }).noise(1.5, 2.5));
+  });
+
+  it("should stay within [-1, 1]", () => {
+    const noise = new FractalPerlinNoise3D({
+      seed: 3,
+      amplitudes: [1, 1, 2, 2, 2, 1, 1, 1, 1],
+      independentOctaves: true,
+      frequency: 0.01,
+    });
+    for (let i = 0; i < 1000; i++) {
+      const value = noise.noise(i * 3.7, i * 1.3, i * 2.9);
+      expect(value).toBeGreaterThanOrEqual(-1);
+      expect(value).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("should be deterministic, and differ from the shared field", () => {
+    const options = { seed: "det", independentOctaves: true, octaves: 5 };
+    const a = new FractalPerlinNoise2D(options).noise(12.3, 45.6);
+    const b = new FractalPerlinNoise2D(options).noise(12.3, 45.6);
+    expect(a).toBe(b);
+    expect(a).not.toBe(
+      new FractalPerlinNoise2D({ seed: "det", octaves: 5 }).noise(12.3, 45.6),
+    );
+  });
+
+  it("should refuse amplitudes it cannot honour", () => {
+    for (const amplitudes of [[], [0, 0], [1, NaN], [1, Infinity]]) {
+      expect(() => new FractalPerlinNoise2D({ amplitudes })).toThrow(
+        RangeError,
+      );
+    }
+  });
+
+  it("should refuse octaves and amplitudes together", () => {
+    // `amplitudes` sets the number of octaves: a second count would conflict.
+    expect(
+      () => new FractalPerlinNoise2D({ amplitudes: [1, 1], octaves: 2 }),
+    ).toThrow(RangeError);
   });
 });
 
