@@ -26,6 +26,10 @@ ops and standard IEEE-754 `f64`):
   edges + 4 balanced duplicates, avoids the `% 12` modulo bias). Unit-length.
 - **Normalization**: each octave × per-dimension factor (`[2, √2, √2]`) then
   clamped, so output fills `[-1, 1]`.
+- **Independent octaves**: the seed drives xorshift32; per octave, one draw
+  seeds its permutation, then three draws give the x, y, z offsets
+  (`draw / 2³² × 256`) — three in every dimension. Weighted octaves divide by
+  the sum of `amplitude × |weight|`, skipping zero weights in both sums.
 - **`fade` / `lerp`**, the octave's corner/reduction arithmetic, and the fractal
   loop — identical **order of operations**. The *shape* of the code is not
   normative: TypeScript unrolls both per dimension for speed (see below), Python
@@ -36,7 +40,10 @@ per dimension rather than driving them with the dimension-agnostic engine. A
 generic engine carries coordinates, corner offsets and intermediate reductions in
 arrays — sixteen allocations per 3D call — which cost eleven times the arithmetic
 it performed in TypeScript and a little over three times in Python. Same
-operations, same order, same values; only the allocations are gone.
+operations, same order, same values; only the allocations are gone. Likewise,
+the unrolled fractal loops read each octave's frequency and amplitude, and the
+divisor, from a plan the constructor builds with the generic loop's running
+products, in its order — the same bits, computed once instead of per call.
 
 **The generic engines stay**, in both languages: they are the extension point a
 new dimension or gradient set builds on, and they are also the executable

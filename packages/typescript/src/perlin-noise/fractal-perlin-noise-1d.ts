@@ -5,6 +5,7 @@ import {
 import { NoiseGeneratorOptions } from "../noise-generator";
 import { FractalNoiseGenerator1D } from "../interfaces/fractal-noise-generator-1d";
 import { sampleLine, LineRegion } from "../sampling";
+import { OFFSET_AXES, octaveSources } from "../octave-sources";
 
 import { PerlinNoise1D } from "./perlin-noise-1d";
 
@@ -19,24 +20,39 @@ export class FractalPerlinNoise1D
   extends FractalNoiseGenerator
   implements FractalNoiseGenerator1D
 {
-  private source: PerlinNoise1D;
+  /** The source of each octave: one shared, or one each when independent. */
+  private sources: readonly PerlinNoise1D[];
+  private offsets: Float64Array;
 
   constructor(options: FractalPerlinOptions = {}) {
     const { seed, ...fractal } = options;
     super(fractal);
-    this.source = new PerlinNoise1D({ seed });
+    const built = octaveSources(
+      seed,
+      this.octaves,
+      this.independentOctaves,
+      (octaveSeed) => new PerlinNoise1D({ seed: octaveSeed }),
+    );
+    this.sources = built.sources;
+    this.offsets = built.offsets;
   }
 
   /**
    * Bridges the generic `fractal` engine to the source's signature.
+   *
+   * With independent octaves, `octave` selects the source and its offset; a
+   * shared source is sampled as is, so plain fBm keeps its exact bits.
    *
    * **Feeds the generic `fractal` only.** `noise` stacks its own octaves, so
    * overriding this method does *not* change what `noise` returns. To stack a
    * different source, extend {@link FractalNoiseGenerator} directly and
    * implement `noise` alongside `sample`.
    */
-  protected sample(coords: number[]): number {
-    return this.source.noise(coords[0]);
+  protected sample(coords: number[], octave: number): number {
+    const source = this.sources[octave];
+    if (!this.independentOctaves) return source.noise(coords[0]);
+    const at = octave * OFFSET_AXES;
+    return source.noise(coords[0] + this.offsets[at]);
   }
 
   /**
@@ -45,19 +61,41 @@ export class FractalPerlinNoise1D
    * @returns value in interval [-1, 1]
    */
   noise(x: number): number {
+    if (this.independentOctaves) return this.independentNoise(x);
+
+    // Plain fBm, inlined: one source, sampled at every frequency.
+    const source = this.sources[0];
     let value = 0;
-    let maxValue = 0;
-    let amplitude = 1;
-    let frequency = this.frequency;
 
     for (let i = 0; i < this.octaves; i++) {
-      value += this.source.noise(x * frequency) * amplitude;
-      maxValue += amplitude;
-      amplitude *= this.persistence;
-      frequency *= this.lacunarity;
+      const weight = this.weights[i];
+      if (weight !== 0) {
+        const frequency = this.octaveFrequencies[i];
+        value +=
+          source.noise(x * frequency) * this.octaveAmplitudes[i] * weight;
+      }
     }
 
-    return value / maxValue;
+    return value / this.amplitudeSum;
+  }
+
+  /** Each octave samples its own source, from its own offset. */
+  private independentNoise(x: number): number {
+    let value = 0;
+
+    for (let i = 0; i < this.octaves; i++) {
+      const weight = this.weights[i];
+      if (weight !== 0) {
+        const frequency = this.octaveFrequencies[i];
+        const at = i * OFFSET_AXES;
+        value +=
+          this.sources[i].noise(x * frequency + this.offsets[at]) *
+          this.octaveAmplitudes[i] *
+          weight;
+      }
+    }
+
+    return value / this.amplitudeSum;
   }
 }
 

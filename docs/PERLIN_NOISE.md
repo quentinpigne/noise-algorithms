@@ -304,6 +304,21 @@ source; the rest are the fractal layer's parameters.
 | `octaves` | How many layers are summed. |
 | `lacunarity` | Frequency multiplier between octaves (usually `2`). |
 | `persistence` | Amplitude multiplier between octaves (usually `0.5`). |
+| `amplitudes` | Optional weight of each octave, multiplying the persistence curve; its length sets the number of octaves, so it is given instead of `octaves`. |
+| `independentOctaves` | Give each octave its own permutation and coordinate offset (default: one shared source). |
+
+With `amplitudes`, octave `i` weighs `amplitudes[i] · persistenceⁱ`, and the sum
+is divided by the total of the absolute weights. A zero skips its octave, in the
+sum and in the divisor alike. The weights must be finite, and at least one
+non-zero.
+
+**Independent octaves.** One shared source repeats the same lattice at every
+octave: at the origin, and wherever the octaves' lattices coincide, every layer
+crosses zero at once. With independent octaves, the seed drives an xorshift32
+stream — for each octave in turn, one draw seeds its permutation, then three
+draws give its x, y and z offsets in `[0, 256)` (`draw / 2³² × 256`, exact in
+`f64`). Three offsets are drawn in every dimension, so a 2D generator reads the
+same stream as a 3D one. This order is part of the cross-language invariant.
 
 ---
 

@@ -124,3 +124,31 @@ def test_matches_for_stacked_octaves(octaves: int, lacunarity: float) -> None:
         assert bits(three.noise(x, x * 0.3, x * 0.7)) == bits(
             three.generic(x, x * 0.3, x * 0.7)
         )
+
+
+# Weighted and independent octaves take their own loop: pin it too.
+@pytest.mark.parametrize("independent_octaves", [False, True])
+@pytest.mark.parametrize(
+    "amplitudes", [[1.0], [1.0, 0.0, 2.0, 0.5], [0.0, 1.0, 1.0, 2.0, 2.0, 1.0]]
+)
+def test_matches_for_weighted_and_independent_octaves(
+    amplitudes: list[float], independent_octaves: bool
+) -> None:
+    settings = {
+        "seed": "agreement",
+        "amplitudes": amplitudes,
+        "independent_octaves": independent_octaves,
+        "lacunarity": 2.0,
+        "persistence": 0.5,
+        "frequency": 0.013,
+    }
+    one = GenericFractal1D(**settings)
+    two = GenericFractal2D(**settings)
+    three = GenericFractal3D(**settings)
+
+    for x in COORDINATES[:20]:
+        assert bits(one.noise(x)) == bits(one.generic(x))
+        assert bits(two.noise(x, x * 0.3)) == bits(two.generic(x, x * 0.3))
+        assert bits(three.noise(x, x * 0.3, x * 0.7)) == bits(
+            three.generic(x, x * 0.3, x * 0.7)
+        )

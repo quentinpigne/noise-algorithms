@@ -20,4 +20,12 @@ class NoiseGenerator(ABC):  # noqa: B024 - concept anchor; `noise` is dimension-
     """
 
     def __init__(self, *, seed: int | str = 0) -> None:
-        self._seed = fnv1a32(seed) if isinstance(seed, str) else seed
+        self._seed = resolve_seed(seed)
+
+
+def resolve_seed(seed: int | str) -> int:
+    """The integer a seed stands for: a string is hashed.
+
+    Internal — shared by the generators and by the octave sources.
+    """
+    return fnv1a32(seed) if isinstance(seed, str) else seed

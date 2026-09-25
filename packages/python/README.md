@@ -73,6 +73,20 @@ TypeScript packages. A fractal generator takes the layering options:
 | `lacunarity` | `2.0` | Frequency multiplier between successive octaves. |
 | `persistence` | `0.5` | Amplitude multiplier between successive octaves. |
 | `frequency` | `0.01` | Base frequency applied to the first octave. |
+| `amplitudes` | `None` | Weight of each octave, on top of `persistence`; its length sets the number of octaves. |
+| `independent_octaves` | `False` | Give each octave its own permutation and coordinate offset. |
+
+**Weighted octaves.** `amplitudes=[1, 1, 2, 2, 2, 1]` makes octave `i` weigh
+`amplitudes[i] * persistence**i`, which lets a field favour a band of scales
+instead of following the persistence curve alone. A zero skips its octave. Its
+length is the number of octaves, so it is given instead of `octaves`, never with
+it.
+
+**Independent octaves.** By default every octave samples the same source, so
+the layers share one lattice: they all cross zero at the origin and wherever
+their lattices line up. With `independent_octaves=True`, each octave draws its
+own permutation and a coordinate offset from the seed — the choice for a field
+you read against thresholds, where those shared zeros would show.
 
 The `FractalPerlinNoise{1,2,3}D` classes and `fractal_perlin_{1,2,3}d` functions
 accept `seed` plus all of the above.

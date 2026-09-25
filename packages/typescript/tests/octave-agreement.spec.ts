@@ -125,4 +125,33 @@ describe("unrolled octave agrees with the generic engine", () => {
       }
     }
   });
+
+  // Weighted and independent octaves take their own loop: pin it too.
+  it("matches for weighted and independent octaves", () => {
+    for (const independentOctaves of [false, true]) {
+      for (const amplitudes of [[1], [1, 0, 2, 0.5], [0, 1, 1, 2, 2, 1]]) {
+        const settings = {
+          seed: "agreement",
+          amplitudes,
+          independentOctaves,
+          lacunarity: 2,
+          persistence: 0.5,
+          frequency: 0.013,
+        };
+        const one = new GenericFractal1D(settings);
+        const two = new GenericFractal2D(settings);
+        const three = new GenericFractal3D(settings);
+
+        for (const x of coordinates().slice(0, 20)) {
+          expect(bits(one.noise(x))).toBe(bits(one.generic(x)));
+          expect(bits(two.noise(x, x * 0.3))).toBe(
+            bits(two.generic(x, x * 0.3)),
+          );
+          expect(bits(three.noise(x, x * 0.3, x * 0.7))).toBe(
+            bits(three.generic(x, x * 0.3, x * 0.7)),
+          );
+        }
+      }
+    }
+  });
 });

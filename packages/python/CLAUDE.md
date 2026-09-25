@@ -20,6 +20,8 @@ Coverage (ephemeral): `uv run --with pytest-cov pytest -m "not integration" --co
 
 - `noise_generator.py`, `fractal_noise_generator.py` — the two abstract concept
   base classes.
+- `_octave_sources.py` — private: the source and offset of each fractal octave,
+  shared or independent. Algorithm-agnostic, next to the fractal engine.
 - `interfaces.py` — `NoiseGenerator{1,2,3}D` + `FractalNoiseGenerator{1,2,3}D`
   runtime-checkable Protocols (the "interfaces").
 - `perlin/` — `_base.py` (abstract engine, `_octave`, `_scaled`,

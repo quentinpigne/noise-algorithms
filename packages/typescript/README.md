@@ -90,15 +90,32 @@ new PerlinNoise2D({ seed? });
 A fractal generator takes the layering options (all optional):
 
 ```ts
-new FractalPerlinNoise2D({ seed?, octaves?, lacunarity?, persistence?, frequency? });
+new FractalPerlinNoise2D({
+  seed?, octaves?, lacunarity?, persistence?, frequency?,
+  amplitudes?, independentOctaves?,
+});
 ```
 
-| Parameter     | Default | Description                                      |
-| ------------- | ------- | ------------------------------------------------ |
-| `octaves`     | `4`     | Number of noise layers summed together.          |
-| `lacunarity`  | `2`     | Frequency multiplier between successive octaves. |
-| `persistence` | `0.5`   | Amplitude multiplier between successive octaves. |
-| `frequency`   | `0.01`  | Base frequency applied to the first octave.      |
+| Parameter            | Default | Description                                                                            |
+| -------------------- | ------- | -------------------------------------------------------------------------------------- |
+| `octaves`            | `4`     | Number of noise layers summed together.                                                |
+| `lacunarity`         | `2`     | Frequency multiplier between successive octaves.                                       |
+| `persistence`        | `0.5`   | Amplitude multiplier between successive octaves.                                       |
+| `frequency`          | `0.01`  | Base frequency applied to the first octave.                                            |
+| `amplitudes`         | —       | Weight of each octave, on top of `persistence`; its length sets the number of octaves. |
+| `independentOctaves` | `false` | Give each octave its own permutation and coordinate offset.                            |
+
+**Weighted octaves.** `amplitudes: [1, 1, 2, 2, 2, 1]` makes octave `i` weigh
+`amplitudes[i] × persistence^i`, which lets a field favour a band of scales
+instead of following the persistence curve alone. A zero skips its octave. Its
+length is the number of octaves, so it is given instead of `octaves`, never with
+it.
+
+**Independent octaves.** By default every octave samples the same source, so
+the layers share one lattice: they all cross zero at the origin and wherever
+their lattices line up. With `independentOctaves: true`, each octave draws its
+own permutation and a coordinate offset from the seed — the choice for a field
+you read against thresholds, where those shared zeros would show.
 
 The `FractalPerlinNoise{1,2,3}D` classes and `fractalPerlin{1,2,3}D` functions
 accept `seed` plus all of the above.
