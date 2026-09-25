@@ -1,5 +1,7 @@
 """Tests for the Perlin and fractal noise generators."""
 
+import math
+
 import pytest
 
 from noise_algorithms import (
@@ -159,3 +161,84 @@ def test_different_string_seeds_differ():
     assert fractal_perlin_2d(1.5, 2.5, seed="alpha") != fractal_perlin_2d(
         1.5, 2.5, seed="beta"
     )
+
+
+# Cross-language conformance vectors for weighted and independent octaves, also
+# asserted in perlin-noise.spec.ts: the octave sources are drawn from the seed
+# in a fixed order, and both packages must draw the same ones.
+INDEPENDENT = {
+    "seed": 42,
+    "amplitudes": [1, 2, 0, 1],
+    "independent_octaves": True,
+    "frequency": 0.25,
+}
+
+
+def test_independent_octaves_conformance():
+    assert (
+        fractal_perlin_1d(0.5, **INDEPENDENT) == 0.060837062084114574
+    )  # 3faf260910126dc4
+    assert (
+        fractal_perlin_2d(0.5, 0.5, **INDEPENDENT) == 0.33682886946882246
+    )  # 3fd58e9aacade759
+    assert (
+        fractal_perlin_3d(0.5, 0.5, 0.5, **INDEPENDENT) == -0.01860693052720046
+    )  # bf930db1f85f822d
+
+
+def test_weighted_shared_octaves_conformance():
+    value = fractal_perlin_2d(
+        0.5, 0.5, seed=42, amplitudes=[1, 2, 0, 1], frequency=0.25
+    )
+    assert value == 0.033605902542557374  # 3fa134caf8bee5d3
+
+
+def test_independent_octaves_do_not_cross_zero_at_the_origin():
+    # A shared source is zero on its lattice, the origin first; offset octaves
+    # are not.
+    assert fractal_perlin_3d(0, 0, 0, seed="monde") == 0
+    value = fractal_perlin_3d(0, 0, 0, seed="monde", independent_octaves=True)
+    assert value == -0.15382253414265762  # bfc3b074f0c3e952
+
+
+def test_unit_weights_keep_plain_fbm():
+    for x, y in [(1.5, 2.5), (-7.25, 3.125)]:
+        weighted = FractalPerlinNoise2D(seed=9, amplitudes=[1, 1, 1]).noise(x, y)
+        plain = FractalPerlinNoise2D(seed=9, octaves=3).noise(x, y)
+        assert weighted == plain
+
+
+def test_zero_weight_skips_its_octave():
+    # A zero drops the octave from the sum and from the normalisation alike.
+    skipped = FractalPerlinNoise2D(seed=9, amplitudes=[1, 0]).noise(1.5, 2.5)
+    assert skipped == FractalPerlinNoise2D(seed=9, octaves=1).noise(1.5, 2.5)
+
+
+def test_refuses_octaves_and_amplitudes_together():
+    # `amplitudes` sets the number of octaves: a second count would conflict.
+    with pytest.raises(ValueError):
+        FractalPerlinNoise2D(amplitudes=[1, 1], octaves=2)
+
+
+def test_weighted_independent_output_within_bounds():
+    noise = FractalPerlinNoise3D(
+        seed=3,
+        amplitudes=[1, 1, 2, 2, 2, 1, 1, 1, 1],
+        independent_octaves=True,
+        frequency=0.01,
+    )
+    for i in range(1000):
+        assert -1 <= noise.noise(i * 3.7, i * 1.3, i * 2.9) <= 1
+
+
+def test_independent_octaves_differ_from_the_shared_field():
+    options = {"seed": "det", "independent_octaves": True, "octaves": 5}
+    a = FractalPerlinNoise2D(**options).noise(12.3, 45.6)
+    assert a == FractalPerlinNoise2D(**options).noise(12.3, 45.6)
+    assert a != FractalPerlinNoise2D(seed="det", octaves=5).noise(12.3, 45.6)
+
+
+@pytest.mark.parametrize("amplitudes", [[], [0, 0], [1, math.nan], [1, math.inf]])
+def test_refuses_amplitudes_it_cannot_honour(amplitudes):
+    with pytest.raises(ValueError):
+        FractalPerlinNoise2D(amplitudes=amplitudes)
