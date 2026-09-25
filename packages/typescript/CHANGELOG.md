@@ -5,21 +5,70 @@ All notable changes to `@quentinpigne/noise-algorithms` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2026-09-25
+
+Weighted and independent octaves. Same field when you do not ask for them.
 
 ### Added
 
-- **Weighted octaves**: the `amplitudes` option gives each octave a weight on
-  top of the persistence curve — octave `i` weighs
-  `amplitudes[i] × persistence^i` — and sets the number of octaves, so it cannot
-  be given with `octaves`. A zero skips its octave; the weights must be finite.
-- **Independent octaves**: with `independentOctaves: true`, each octave draws
-  its own permutation and a coordinate offset from the seed, instead of all
-  sampling one source. The layers no longer cross zero together at the origin
-  and along their shared lattice.
-- Both are optional and additive: without them, every generator returns the
-  same bits as before. The octave draws are part of the cross-language
-  invariant, pinned by new conformance vectors shared with the Python package.
+- **Weighted octaves.** The `amplitudes` option gives each octave a weight on
+  top of the persistence curve: octave `i` weighs
+  `amplitudes[i] × persistence^i`. `amplitudes: [1, 1, 2, 2, 2, 1]` lets a
+  field favour a band of scales instead of following the persistence curve
+  alone. A zero skips its octave, in the sum and in the divisor alike, and the
+  sum is divided by the total of the absolute weights, so the output stays in
+  `[-1, 1]`.
+- **Independent octaves.** With `independentOctaves: true`, each octave draws
+  its own permutation and a coordinate offset from the seed, instead of every
+  octave sampling one source. A shared source repeats its lattice at every
+  frequency, so all the layers cross zero together at the origin and wherever
+  their lattices line up — visible in a field read against thresholds.
+  Independent layers do not.
+- Both options are accepted by the fractal classes, the one-shot functions and
+  the region one-shots, and both combine.
+
+### Cross-language invariant
+
+- The octave draws are part of it: the seed drives xorshift32 and, for each
+  octave in turn, one draw seeds its permutation, then three draws give its x, y
+  and z offsets (`draw / 2³² × 256`) — three in every dimension. The same seed
+  and options produce the same field in both packages, pinned by new conformance
+  vectors asserted bit-for-bit in `tests/perlin-noise.spec.ts` and shared with
+  the Python package.
+
+### Validation
+
+- `amplitudes` sets the number of octaves, so it is given **instead of**
+  `octaves`, never with it: the two together raise `RangeError` rather than one
+  silently winning. So do an empty list, a non-finite weight (`NaN`,
+  `±Infinity`) and a list of zeros only.
+
+### Compatibility
+
+**Without the new options, the output is unchanged, bit-for-bit.** A weight of
+`1` is exact, and the shared path does not add a zero offset, which could flip
+the sign of a zero. The 1.0.1 conformance vectors and integration snapshots pass
+unchanged: a world generated with 1.0.1 regenerates identically.
+
+Plain fBm keeps its 1.0.1 speed. Each octave's frequency and amplitude, and the
+divisor, are built once by the constructor — with the generic loop's running
+products, in its order, so with the same bits — instead of on every call.
+
+### Notes for subclassers
+
+`FractalNoiseGenerator.sample` now takes the octave as a second argument,
+`sample(coords, octave)`, which selects the source and its offset in
+independent mode. An override written for 1.0.1 as `sample(coords)` still
+compiles and still works for shared octaves; a subclass that calls
+`this.sample(coords)` itself must now pass the octave.
+
+The base class gains protected members — `weights`, `independentOctaves`,
+`octaveFrequencies`, `octaveAmplitudes`, `amplitudeSum` — which a subclass
+declaring a member of the same name will clash with.
+
+The generic `fractal` is still the specification the bundled loops are tested
+against, bit-for-bit, now for weighted and independent octaves too
+(`tests/octave-agreement.spec.ts`).
 
 ## [1.0.1] - 2026-09-22
 
